@@ -8,11 +8,10 @@ import { FlowPage } from '@/pages/FlowPage'
 import { ComponentsPage } from '@/pages/ComponentsPage'
 
 const router = createBrowserRouter([
+  { path: '/', element: <LandingPage /> },
   {
-    path: '/',
     element: <AppLayout />,
     children: [
-      { index: true, element: <LandingPage /> },
       { path: 'zustand', element: <ZustandPage /> },
       { path: 'query', element: <QueryPage /> },
       { path: 'form', element: <FormPage /> },
