@@ -144,8 +144,10 @@ const T = {
     cardName:     'text-white/90',
     cardDesc:     'text-white/45',
     cardSimple:   'text-white/30',
-    cardArrow:    'text-white/25 group-hover:text-violet-400',
-    divider:      'border-white/[0.06]',
+    cardArrow:       'text-white/25 group-hover:text-violet-400',
+    cardLinkDoc:     'border border-sky-500/30 text-sky-400/70 group-hover:border-sky-400/60 group-hover:text-sky-300',
+    cardLinkExample: 'bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300',
+    divider:         'border-white/[0.06]',
   },
   light: {
     page:         'bg-[#f4f4f9] text-gray-900',
@@ -168,8 +170,10 @@ const T = {
     cardName:     'text-gray-900',
     cardDesc:     'text-gray-500',
     cardSimple:   'text-gray-400',
-    cardArrow:    'text-gray-300 group-hover:text-violet-500',
-    divider:      'border-gray-100',
+    cardArrow:       'text-gray-300 group-hover:text-violet-500',
+    cardLinkDoc:     'border border-sky-300 text-sky-600 group-hover:border-sky-400 group-hover:text-sky-700',
+    cardLinkExample: 'bg-violet-50 text-violet-600 group-hover:bg-violet-100 group-hover:text-violet-700',
+    divider:         'border-gray-100',
   },
 }
 
@@ -287,9 +291,11 @@ export function LandingPage() {
 
                 <p className={`text-xs leading-relaxed ${t.cardSimple}`}>{item.simple}</p>
 
-                <p className={`mt-3 text-[10px] font-medium transition-colors ${t.cardArrow}`}>
-                  {item.internal ? '예시 보기 →' : '공식 문서 ↗'}
-                </p>
+                <div className="mt-3">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${item.internal ? t.cardLinkExample : t.cardLinkDoc}`}>
+                    {item.internal ? '예시 보기 →' : '공식 문서 ↗'}
+                  </span>
+                </div>
               </>
             )
 
