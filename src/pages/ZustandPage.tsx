@@ -1,13 +1,27 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { useCounterStore } from '@/store/useCounterStore'
-import { Minus, Plus, RotateCcw, Info, Lightbulb, Rocket } from 'lucide-react'
+import { useCartStore } from '@/store/useCartStore'
+import { Minus, Plus, RotateCcw, Info, Lightbulb, Rocket, ShoppingCart, X, Trash2 } from 'lucide-react'
+
+// 장바구니 데모에 사용할 샘플 상품
+const PRODUCTS = [
+  { id: 1, name: '아메리카노', price: 4500 },
+  { id: 2, name: '카페라떼', price: 5000 },
+  { id: 3, name: '초콜릿케이크', price: 6500 },
+]
 
 export function ZustandPage() {
   const { count, inc, dec, reset } = useCounterStore()
+  const { items, addItem, removeItem, clearCart } = useCartStore()
+
+  // 합계 계산
+  const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const totalCount = items.reduce((sum, i) => sum + i.quantity, 0)
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Zustand</h2>
         <p className="mt-1 text-muted-foreground">
@@ -39,12 +53,13 @@ export function ZustandPage() {
         </CardContent>
       </Card>
 
+      {/* 예시 1: 카운터 */}
       <Card>
         <CardHeader>
-          <CardTitle>카운터 데모</CardTitle>
+          <CardTitle>예시 1 — 카운터</CardTitle>
           <CardDescription>
-            <code className="text-xs bg-muted px-1 py-0.5 rounded">useCounterStore</code> 스토어를
-            사용하는 카운터입니다.
+            <code className="text-xs bg-muted px-1 py-0.5 rounded">useCounterStore</code>의
+            숫자 상태와 액션(inc / dec / reset)을 사용합니다.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -62,6 +77,163 @@ export function ZustandPage() {
               </Button>
             </div>
           </div>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed mt-2">
+            <code>{`// useCounterStore.ts
+export const useCounterStore = create<CounterState>((set) => ({
+  count: 0,
+  inc: () => set((state) => ({ count: state.count + 1 })),
+  dec: () => set((state) => ({ count: state.count - 1 })),
+  reset: () => set({ count: 0 }),
+}))`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 2: 장바구니 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>예시 2 — 장바구니</CardTitle>
+              <CardDescription className="mt-1">
+                <strong>상품 목록</strong>과 <strong>장바구니</strong> 두 영역이 같은{' '}
+                <code className="text-xs bg-muted px-1 py-0.5 rounded">useCartStore</code>를
+                공유합니다. 상품을 담아보세요.
+              </CardDescription>
+            </div>
+            {totalCount > 0 && (
+              <Badge className="shrink-0">
+                <ShoppingCart className="size-3 mr-1" />
+                {totalCount}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            {/* 상품 목록 패널 */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">상품 목록</p>
+              {PRODUCTS.map((product) => (
+                <div
+                  key={product.id}
+                  className="flex items-center justify-between rounded-md border p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{product.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {product.price.toLocaleString()}원
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => addItem(product)}>
+                    <Plus className="size-3 mr-1" />
+                    담기
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* 장바구니 패널 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">장바구니</p>
+                {items.length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 text-xs"
+                    onClick={clearCart}
+                  >
+                    <Trash2 className="size-3 mr-1" />
+                    비우기
+                  </Button>
+                )}
+              </div>
+
+              {items.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-6 text-center border rounded-md">
+                  담은 상품이 없습니다
+                </p>
+              ) : (
+                <>
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between rounded-md border p-3"
+                    >
+                      <div>
+                        <p className="text-sm">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">수량 {item.quantity}개</p>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-7"
+                        onClick={() => removeItem(item.id)}
+                      >
+                        <X className="size-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="rounded-md bg-muted p-3 flex justify-between text-sm">
+                    <span className="text-muted-foreground">합계</span>
+                    <span className="font-semibold">{totalPrice.toLocaleString()}원</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed mt-4">
+            <code>{`// useCartStore.ts — 배열 상태 + 액션 정의
+export const useCartStore = create<CartState>((set) => ({
+  items: [],
+  addItem: (product) =>
+    set((state) => {
+      const existing = state.items.find((i) => i.id === product.id)
+      if (existing) {
+        // 이미 있으면 수량 증가
+        return { items: state.items.map((i) =>
+          i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+        )}
+      }
+      return { items: [...state.items, { ...product, quantity: 1 }] }
+    }),
+  removeItem: (id) =>
+    set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+  clearCart: () => set({ items: [] }),
+}))`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 3: persist 미들웨어 (코드 예시) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 3 — localStorage 연동 (persist)</CardTitle>
+          <CardDescription>
+            새로고침해도 상태가 유지되게 하려면{' '}
+            <code className="text-xs bg-muted px-1 py-0.5 rounded">persist</code> 미들웨어를
+            사용합니다. 이 앱의 다크 모드 설정이 이 방식으로 저장됩니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export const useThemeStore = create(
+  persist(
+    (set) => ({
+      isDark: false,
+      toggle: () => set((state) => ({ isDark: !state.isDark })),
+    }),
+    {
+      name: 'rsk-theme', // localStorage 키 이름
+    }
+  )
+)`}</code>
+          </pre>
         </CardContent>
       </Card>
 
@@ -81,42 +253,21 @@ export function ZustandPage() {
             </li>
             <li>
               • <strong className="text-foreground">쇼핑몰 장바구니</strong> — 상품 담기/삭제/수량
-              변경을 여러 페이지에서 공유
+              변경을 여러 페이지에서 공유 (위 데모!)
             </li>
             <li>
               • <strong className="text-foreground">다크/라이트 테마</strong> — 테마 설정을 모든
-              컴포넌트에서 읽고 토글 (이 앱도 Zustand로 테마를 관리합니다!)
+              컴포넌트에서 읽고 토글 (이 앱도 Zustand + persist로 테마를 관리합니다!)
             </li>
             <li>
               • <strong className="text-foreground">알림 메시지(Toast)</strong> — 어디서든
               알림을 띄우고 닫는 전역 컨트롤
             </li>
+            <li>
+              • <strong className="text-foreground">모달/드로어 열기</strong> — 버튼과 모달이 다른
+              컴포넌트 트리에 있어도 스토어로 열고 닫기
+            </li>
           </ul>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">스토어 코드</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
-            <code>{`import { create } from 'zustand'
-
-interface CounterState {
-  count: number
-  inc: () => void
-  dec: () => void
-  reset: () => void
-}
-
-export const useCounterStore = create<CounterState>((set) => ({
-  count: 0,
-  inc: () => set((state) => ({ count: state.count + 1 })),
-  dec: () => set((state) => ({ count: state.count - 1 })),
-  reset: () => set({ count: 0 }),
-}))`}</code>
-          </pre>
         </CardContent>
       </Card>
 

@@ -1,13 +1,28 @@
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useUsers } from '@/api/queries'
-import { Loader2, AlertCircle, Info, Lightbulb, Rocket } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useUsers, usePosts, useCreatePost } from '@/api/queries'
+import { Loader2, AlertCircle, Info, Lightbulb, Rocket, RefreshCw, CheckCircle } from 'lucide-react'
 
 export function QueryPage() {
-  const { data: users, isLoading, isError, error, isFetching } = useUsers()
+  const { data: users, isLoading, isError, error, isFetching, refetch } = useUsers()
+  const { data: posts, isLoading: postsLoading } = usePosts()
+
+  // useMutation 데모용 상태
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const { mutate: createPost, isPending, isSuccess, data: createdPost, reset: resetMutation } = useCreatePost()
+
+  function handleCreate() {
+    if (!title.trim()) return
+    createPost({ title, body })
+  }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold">TanStack Query</h2>
         <p className="mt-1 text-muted-foreground">
@@ -44,11 +59,17 @@ export function QueryPage() {
         </CardContent>
       </Card>
 
+      {/* 예시 1: useQuery — 사용자 목록 */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>사용자 목록</CardTitle>
-            <div className="flex items-center gap-2">
+            <div>
+              <CardTitle>예시 1 — useQuery (데이터 조회)</CardTitle>
+              <CardDescription className="mt-1">
+                JSONPlaceholder API에서 사용자 데이터를 가져옵니다.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
               {isFetching && !isLoading && (
                 <Badge variant="outline" className="text-xs">
                   <Loader2 className="size-3 mr-1 animate-spin" />
@@ -56,9 +77,12 @@ export function QueryPage() {
                 </Badge>
               )}
               {users && <Badge variant="secondary">{users.length}명</Badge>}
+              <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching}>
+                <RefreshCw className={`size-3 mr-1 ${isFetching ? 'animate-spin' : ''}`} />
+                다시 불러오기
+              </Button>
             </div>
           </div>
-          <CardDescription>JSONPlaceholder API에서 사용자 데이터를 가져옵니다.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && (
@@ -90,6 +114,134 @@ export function QueryPage() {
               ))}
             </ul>
           )}
+
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed mt-4">
+            <code>{`// queryKey가 같으면 캐시를 공유합니다
+const { data, isLoading, isError, refetch } = useQuery({
+  queryKey: ['users'],   // 캐시 키 — 배열로 계층 구조 표현 가능
+  queryFn: fetchUsers,   // 실제 fetch 함수
+  staleTime: 30_000,     // 30초 동안은 캐시된 데이터 사용
+})`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 2: useQuery — 포스트 목록 (다른 엔드포인트) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 2 — useQuery (다른 엔드포인트)</CardTitle>
+          <CardDescription>
+            같은 페이지에서 여러 엔드포인트를 동시에 조회할 수 있습니다. queryKey가 다르면 각자
+            독립적인 캐시를 가집니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {postsLoading && (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="size-4 animate-spin mr-2" />
+              불러오는 중...
+            </div>
+          )}
+          {posts && (
+            <ul className="space-y-3">
+              {posts.map((post) => (
+                <li key={post.id} className="rounded-md border p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium leading-snug">{post.title}</p>
+                    <Badge variant="outline" className="text-xs shrink-0">
+                      #{post.id}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{post.body}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 예시 3: useMutation — 데이터 생성 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 3 — useMutation (데이터 생성)</CardTitle>
+          <CardDescription>
+            <code className="text-xs bg-muted px-1 py-0.5 rounded">useMutation</code>은 데이터를
+            생성·수정·삭제할 때 사용합니다. isPending, isSuccess 상태를 자동으로 제공합니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isSuccess && createdPost ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-emerald-600">
+                <CheckCircle className="size-4" />
+                포스트가 생성되었습니다 (JSONPlaceholder가 id: {createdPost.id}로 응답)
+              </div>
+              <div className="rounded-md bg-muted p-4 text-xs space-y-1">
+                <p>
+                  <span className="text-muted-foreground">id:</span> {createdPost.id}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">title:</span> {createdPost.title}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">body:</span> {createdPost.body}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  resetMutation()
+                  setTitle('')
+                  setBody('')
+                }}
+              >
+                다시 작성
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="post-title">제목</Label>
+                <Input
+                  id="post-title"
+                  placeholder="포스트 제목"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="post-body">내용</Label>
+                <Input
+                  id="post-body"
+                  placeholder="포스트 내용"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                />
+              </div>
+              <Button onClick={handleCreate} disabled={isPending || !title.trim()}>
+                {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
+                {isPending ? '생성 중...' : '포스트 생성'}
+              </Button>
+            </div>
+          )}
+
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`const { mutate, isPending, isSuccess, data } = useMutation({
+  mutationFn: (newPost) =>
+    fetch('/api/posts', {
+      method: 'POST',
+      body: JSON.stringify(newPost),
+    }).then((r) => r.json()),
+
+  // 성공 후 관련 쿼리 캐시 무효화 → 목록 자동 갱신
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['posts'] })
+  },
+})
+
+mutate({ title: '새 포스트', body: '내용...' })`}</code>
+          </pre>
         </CardContent>
       </Card>
 
@@ -120,7 +272,11 @@ export function QueryPage() {
               • <strong className="text-foreground">댓글 작성 후 목록 갱신</strong> —{' '}
               <code className="text-xs bg-muted px-1 py-0.5 rounded">useMutation</code> +{' '}
               <code className="text-xs bg-muted px-1 py-0.5 rounded">invalidateQueries</code>로
-              자동 동기화
+              자동 동기화 (위 예시 3!)
+            </li>
+            <li>
+              • <strong className="text-foreground">낙관적 업데이트(Optimistic Update)</strong> —
+              서버 응답 전에 UI를 먼저 업데이트해서 빠른 반응성 제공
             </li>
           </ul>
         </CardContent>

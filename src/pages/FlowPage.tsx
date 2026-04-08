@@ -14,45 +14,109 @@ import '@xyflow/react/dist/style.css'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info, Lightbulb, Rocket } from 'lucide-react'
 
-const initialNodes = [
+// ─── 예시 1: 주문 처리 플로우 ───────────────────────────────────
+const orderNodes = [
   {
     id: '1',
-    position: { x: 80, y: 80 },
-    data: { label: 'Input Node' },
+    position: { x: 60, y: 160 },
+    data: { label: '주문 접수' },
     type: 'input',
+    style: { background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: 8 },
   },
   {
     id: '2',
-    position: { x: 320, y: 80 },
-    data: { label: 'Process Node' },
+    position: { x: 280, y: 60 },
+    data: { label: '결제 처리' },
+    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
   },
   {
     id: '3',
-    position: { x: 320, y: 220 },
-    data: { label: 'Another Process' },
+    position: { x: 280, y: 260 },
+    data: { label: '재고 확인' },
+    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
   },
   {
     id: '4',
-    position: { x: 560, y: 150 },
-    data: { label: 'Output Node' },
+    position: { x: 500, y: 160 },
+    data: { label: '배송 준비' },
+    style: { background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8 },
+  },
+  {
+    id: '5',
+    position: { x: 700, y: 160 },
+    data: { label: '배송 완료' },
     type: 'output',
+    style: { background: '#ede9fe', border: '1px solid #c4b5fd', borderRadius: 8 },
   },
 ]
 
-const initialEdges = [
-  { id: 'e1-2', source: '1', target: '2', animated: true },
-  { id: 'e1-3', source: '1', target: '3' },
-  { id: 'e2-4', source: '2', target: '4' },
-  { id: 'e3-4', source: '3', target: '4' },
+const orderEdges = [
+  { id: 'e1-2', source: '1', target: '2', animated: true, label: '결제 요청' },
+  { id: 'e1-3', source: '1', target: '3', animated: true, label: '재고 요청' },
+  { id: 'e2-4', source: '2', target: '4', label: '결제 완료' },
+  { id: 'e3-4', source: '3', target: '4', label: '재고 확인 완료' },
+  { id: 'e4-5', source: '4', target: '5', animated: true, label: '배송 출발' },
+]
+
+// ─── 예시 2: AI 에이전트 파이프라인 ───────────────────────────────
+const agentNodes = [
+  {
+    id: 'a1',
+    position: { x: 60, y: 80 },
+    data: { label: '사용자 입력' },
+    type: 'input',
+    style: { background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: 8 },
+  },
+  {
+    id: 'a2',
+    position: { x: 280, y: 30 },
+    data: { label: '의도 분석 Agent' },
+    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
+  },
+  {
+    id: 'a3',
+    position: { x: 280, y: 140 },
+    data: { label: 'RAG 검색 Agent' },
+    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
+  },
+  {
+    id: 'a4',
+    position: { x: 500, y: 80 },
+    data: { label: '응답 생성 Agent' },
+    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
+  },
+  {
+    id: 'a5',
+    position: { x: 700, y: 80 },
+    data: { label: '최종 출력' },
+    type: 'output',
+    style: { background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8 },
+  },
+]
+
+const agentEdges = [
+  { id: 'ae1-2', source: 'a1', target: 'a2', animated: true },
+  { id: 'ae1-3', source: 'a1', target: 'a3', animated: true },
+  { id: 'ae2-4', source: 'a2', target: 'a4' },
+  { id: 'ae3-4', source: 'a3', target: 'a4' },
+  { id: 'ae4-5', source: 'a4', target: 'a5', animated: true },
 ]
 
 export function FlowPage() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [orderNodesState, , onOrderNodesChange] = useNodesState(orderNodes)
+  const [orderEdgesState, setOrderEdges, onOrderEdgesChange] = useEdgesState(orderEdges)
 
-  const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    [setEdges]
+  const [agentNodesState, , onAgentNodesChange] = useNodesState(agentNodes)
+  const [agentEdgesState, setAgentEdges, onAgentEdgesChange] = useEdgesState(agentEdges)
+
+  const onOrderConnect = useCallback(
+    (connection: Connection) => setOrderEdges((eds) => addEdge(connection, eds)),
+    [setOrderEdges]
+  )
+
+  const onAgentConnect = useCallback(
+    (connection: Connection) => setAgentEdges((eds) => addEdge(connection, eds)),
+    [setAgentEdges]
   )
 
   return (
@@ -91,21 +155,23 @@ export function FlowPage() {
         </CardContent>
       </Card>
 
+      {/* 예시 1: 주문 처리 플로우 */}
       <Card>
         <CardHeader>
-          <CardTitle>노드 에디터 데모</CardTitle>
+          <CardTitle>예시 1 — 주문 처리 플로우</CardTitle>
           <CardDescription>
-            노드를 드래그하거나, 핸들을 드래그해서 새 연결을 만들어보세요.
+            주문 접수 → 결제/재고 병렬 처리 → 배송 준비 → 배송 완료. 노드를 드래그하거나 핸들에서
+            새 연결선을 만들어보세요.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div style={{ height: 400 }} className="rounded-b-lg overflow-hidden">
+          <div style={{ height: 380 }} className="rounded-b-lg overflow-hidden">
             <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
+              nodes={orderNodesState}
+              edges={orderEdgesState}
+              onNodesChange={onOrderNodesChange}
+              onEdgesChange={onOrderEdgesChange}
+              onConnect={onOrderConnect}
               fitView
             >
               <Controls />
@@ -113,6 +179,71 @@ export function FlowPage() {
               <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
             </ReactFlow>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* 예시 2: AI 에이전트 파이프라인 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 2 — AI 에이전트 파이프라인</CardTitle>
+          <CardDescription>
+            여러 AI 에이전트가 병렬로 처리한 결과를 합쳐서 응답을 생성하는 흐름입니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div style={{ height: 300 }} className="rounded-b-lg overflow-hidden">
+            <ReactFlow
+              nodes={agentNodesState}
+              edges={agentEdgesState}
+              onNodesChange={onAgentNodesChange}
+              onEdgesChange={onAgentEdgesChange}
+              onConnect={onAgentConnect}
+              fitView
+            >
+              <Controls />
+              <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+            </ReactFlow>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 예시 3: 노드 데이터 구조 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 3 — 노드/엣지 데이터 구조</CardTitle>
+          <CardDescription>
+            API 응답 데이터를 그대로 nodes/edges 배열로 변환해서 동적 다이어그램을 생성할 수
+            있습니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`// 노드: id, position, data.label 이 필수
+const nodes = [
+  {
+    id: '1',
+    position: { x: 60, y: 160 },
+    data: { label: '주문 접수' },
+    type: 'input',                // 'input' | 'output' | undefined(기본)
+    style: {                      // 인라인 스타일로 색상 커스터마이징
+      background: '#dbeafe',
+      border: '1px solid #93c5fd',
+      borderRadius: 8,
+    },
+  },
+]
+
+// 엣지: id, source, target 이 필수
+const edges = [
+  {
+    id: 'e1-2',
+    source: '1',
+    target: '2',
+    animated: true,     // 점선 애니메이션
+    label: '결제 요청', // 엣지 위에 표시할 텍스트
+  },
+]`}</code>
+          </pre>
         </CardContent>
       </Card>
 
@@ -128,11 +259,11 @@ export function FlowPage() {
           <ul className="text-sm space-y-2 text-muted-foreground">
             <li>
               • <strong className="text-foreground">AI 에이전트 파이프라인 시각화</strong> — 여러
-              AI 모델이 데이터를 주고받는 흐름을 다이어그램으로 표현
+              AI 모델이 데이터를 주고받는 흐름을 다이어그램으로 표현 (예시 2!)
             </li>
             <li>
               • <strong className="text-foreground">업무 프로세스/워크플로 설계 도구</strong> —
-              결재선, 승인 흐름을 시각적으로 편집
+              결재선, 승인 흐름을 시각적으로 편집 (예시 1!)
             </li>
             <li>
               • <strong className="text-foreground">데이터 흐름 다이어그램</strong> — ETL 파이프라인,
@@ -141,6 +272,10 @@ export function FlowPage() {
             <li>
               • <strong className="text-foreground">마인드맵 / 조직도 빌더</strong> — 계층 구조를
               드래그로 편집
+            </li>
+            <li>
+              • <strong className="text-foreground">노코드 자동화 빌더</strong> — n8n, Zapier처럼
+              블록을 연결해 로직을 구성하는 UI
             </li>
           </ul>
         </CardContent>
@@ -176,12 +311,6 @@ export function FlowPage() {
   { id: '1', position: { x: 0, y: 0 }, data: { label: '시작' } },
   { id: '2', position: { x: 200, y: 0 }, data: { label: '끝' } },
 ]`}
-              </pre>
-            </li>
-            <li>
-              <strong className="text-foreground">엣지 배열 정의</strong>
-              <pre className="mt-1 ml-4 rounded bg-muted px-3 py-2 text-xs">
-                {`const edges = [{ id: 'e1-2', source: '1', target: '2' }]`}
               </pre>
             </li>
             <li>

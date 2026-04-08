@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 export interface User {
   id: number
@@ -18,4 +18,38 @@ export function useUsers() {
     queryKey: ['users'],
     queryFn: fetchUsers,
   })
+}
+
+export interface Post {
+  id: number
+  title: string
+  body: string
+  userId: number
+}
+
+async function fetchPosts(): Promise<Post[]> {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5')
+  if (!res.ok) throw new Error('Failed to fetch posts')
+  return res.json() as Promise<Post[]>
+}
+
+export function usePosts() {
+  return useQuery({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+  })
+}
+
+async function createPost(data: { title: string; body: string }): Promise<Post> {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...data, userId: 1 }),
+  })
+  if (!res.ok) throw new Error('Failed to create post')
+  return res.json() as Promise<Post>
+}
+
+export function useCreatePost() {
+  return useMutation({ mutationFn: createPost })
 }
