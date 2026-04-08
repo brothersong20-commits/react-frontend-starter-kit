@@ -55,7 +55,7 @@ export function FlowPage() {
   )
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold">@xyflow/react</h2>
         <p className="mt-1 text-muted-foreground">

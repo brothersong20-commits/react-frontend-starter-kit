@@ -15,7 +15,7 @@ import {
 
 export function ComponentsPage() {
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8">
       <div>
         <h2 className="text-2xl font-bold">shadcn/ui 컴포넌트</h2>
         <p className="mt-1 text-muted-foreground">

@@ -7,7 +7,7 @@ export function ZustandPage() {
   const { count, inc, dec, reset } = useCounterStore()
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Zustand</h2>
         <p className="mt-1 text-muted-foreground">

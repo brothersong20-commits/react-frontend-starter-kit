@@ -7,7 +7,7 @@ export function QueryPage() {
   const { data: users, isLoading, isError, error, isFetching } = useUsers()
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold">TanStack Query</h2>
         <p className="mt-1 text-muted-foreground">
