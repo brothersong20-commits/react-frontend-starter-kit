@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ExternalLink, Sun, Moon, ArrowUpRight } from 'lucide-react'
+import { useThemeStore } from '@/store/useThemeStore'
 
 const navLinks = [
   { label: 'Zustand', to: '/zustand' },
@@ -17,7 +17,8 @@ const stack = [
     description: '동시성 렌더링, Server Components 지원',
     simple: '화면을 부품처럼 나눠서 만드는 UI 라이브러리예요. 버튼 하나, 카드 하나가 모두 독립적인 컴포넌트입니다.',
     badge: { dark: 'bg-sky-500/20 text-sky-300 border border-sky-500/30', light: 'bg-sky-100 text-sky-700 border border-sky-200' },
-    to: null,
+    href: 'https://react.dev',
+    internal: false,
   },
   {
     name: 'Vite',
@@ -25,7 +26,8 @@ const stack = [
     description: 'HMR, ESM 네이티브, 번들 최적화',
     simple: '코드를 저장하면 브라우저에 즉시 반영되는 초고속 개발 환경이에요. 기다림 없이 바로 결과를 확인할 수 있어요.',
     badge: { dark: 'bg-violet-500/20 text-violet-300 border border-violet-500/30', light: 'bg-violet-100 text-violet-700 border border-violet-200' },
-    to: null,
+    href: 'https://vitejs.dev',
+    internal: false,
   },
   {
     name: 'TypeScript',
@@ -33,7 +35,8 @@ const stack = [
     description: 'Go 기반 컴파일러, strict 기본값',
     simple: '오타나 잘못된 타입을 코드 작성 시점에 잡아주는 JavaScript 확장판이에요. 실수를 미리 예방해줘요.',
     badge: { dark: 'bg-blue-500/20 text-blue-300 border border-blue-500/30', light: 'bg-blue-100 text-blue-700 border border-blue-200' },
-    to: null,
+    href: 'https://www.typescriptlang.org',
+    internal: false,
   },
   {
     name: 'Tailwind CSS',
@@ -41,7 +44,8 @@ const stack = [
     description: 'CSS-first 설정, @import 방식',
     simple: 'class 이름만으로 스타일을 입히는 CSS 도구예요. 별도 CSS 파일 없이 HTML에서 바로 디자인할 수 있어요.',
     badge: { dark: 'bg-teal-500/20 text-teal-300 border border-teal-500/30', light: 'bg-teal-100 text-teal-700 border border-teal-200' },
-    to: null,
+    href: 'https://tailwindcss.com',
+    internal: false,
   },
   {
     name: 'shadcn/ui',
@@ -49,7 +53,8 @@ const stack = [
     description: '복사 붙여넣기 컴포넌트, Radix UI 기반',
     simple: '버튼, 카드, 모달 등 완성된 UI 컴포넌트를 복사해서 내 프로젝트에 붙여넣기만 하면 돼요.',
     badge: { dark: 'bg-zinc-500/20 text-zinc-300 border border-zinc-500/30', light: 'bg-zinc-100 text-zinc-600 border border-zinc-200' },
-    to: '/components',
+    href: '/components',
+    internal: true,
   },
   {
     name: 'React Router',
@@ -57,7 +62,8 @@ const stack = [
     description: 'URL 기반 클라이언트 라우팅',
     simple: 'URL 주소에 따라 다른 화면을 보여주는 페이지 이동 관리자예요. /home, /about 같은 경로 처리를 담당해요.',
     badge: { dark: 'bg-red-500/20 text-red-300 border border-red-500/30', light: 'bg-red-100 text-red-700 border border-red-200' },
-    to: null,
+    href: 'https://reactrouter.com',
+    internal: false,
   },
   {
     name: 'Zustand',
@@ -65,7 +71,8 @@ const stack = [
     description: '가볍고 간결한 클라이언트 상태 관리',
     simple: '여러 컴포넌트가 공유해야 하는 데이터를 한 곳에서 관리하는 저장소예요. 장바구니, 로그인 정보 등에 활용해요.',
     badge: { dark: 'bg-orange-500/20 text-orange-300 border border-orange-500/30', light: 'bg-orange-100 text-orange-700 border border-orange-200' },
-    to: '/zustand',
+    href: '/zustand',
+    internal: true,
   },
   {
     name: 'TanStack Query',
@@ -73,7 +80,8 @@ const stack = [
     description: '캐싱, 리페칭, 로딩/에러 상태 관리',
     simple: '서버에서 데이터를 가져올 때 로딩 중, 에러, 재시도를 자동으로 처리해줘요. API 연동이 훨씬 쉬워져요.',
     badge: { dark: 'bg-rose-500/20 text-rose-300 border border-rose-500/30', light: 'bg-rose-100 text-rose-700 border border-rose-200' },
-    to: '/query',
+    href: '/query',
+    internal: true,
   },
   {
     name: 'React Hook Form',
@@ -81,7 +89,8 @@ const stack = [
     description: '비제어 컴포넌트 방식 폼 상태 관리',
     simple: '이름, 이메일 등 입력 폼을 쉽게 만들고, 값을 효율적으로 관리해줘요. 불필요한 리렌더링 없이 빠르게 동작해요.',
     badge: { dark: 'bg-pink-500/20 text-pink-300 border border-pink-500/30', light: 'bg-pink-100 text-pink-700 border border-pink-200' },
-    to: '/form',
+    href: '/form',
+    internal: true,
   },
   {
     name: 'Zod',
@@ -89,7 +98,8 @@ const stack = [
     description: 'TypeScript-first 스키마 유효성 검증',
     simple: '입력값이 올바른 형식인지 규칙을 정의하고 자동으로 검사해줘요. 이메일 형식, 최소 글자 수 같은 검증에 써요.',
     badge: { dark: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30', light: 'bg-indigo-100 text-indigo-700 border border-indigo-200' },
-    to: '/form',
+    href: '/form',
+    internal: true,
   },
   {
     name: '@xyflow/react',
@@ -97,7 +107,8 @@ const stack = [
     description: '드래그, 연결, 인터랙티브 플로우 차트',
     simple: '노드와 선을 드래그로 연결하는 다이어그램 에디터를 만드는 라이브러리예요. 플로우차트나 워크플로우 UI에 써요.',
     badge: { dark: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30', light: 'bg-emerald-100 text-emerald-700 border border-emerald-200' },
-    to: '/flow',
+    href: '/flow',
+    internal: true,
   },
   {
     name: 'lucide-react',
@@ -105,7 +116,8 @@ const stack = [
     description: 'Tree-shakeable 오픈소스 아이콘',
     simple: '깔끔한 디자인의 아이콘을 React 컴포넌트처럼 바로 가져다 쓸 수 있어요. 사용하지 않는 아이콘은 번들에 포함되지 않아요.',
     badge: { dark: 'bg-amber-500/20 text-amber-300 border border-amber-500/30', light: 'bg-amber-100 text-amber-700 border border-amber-200' },
-    to: '/components',
+    href: '/components',
+    internal: true,
   },
 ]
 
@@ -123,14 +135,12 @@ const T = {
     pill:         'border-white/[0.12] bg-white/[0.06]',
     pillDot:      'bg-emerald-400',
     pillText:     'text-white/60',
-    titleFrom:    '#ffffff',
-    titleTo:      'rgba(255,255,255,0.5)',
+    titleGrad:    'bg-gradient-to-b from-white to-white/50',
     subtitle:     'text-white/40',
     btnPrimary:   'bg-white text-black hover:bg-white/90',
     btnSecondary: 'border-white/[0.15] bg-white/[0.06] text-white/80 hover:border-white/25 hover:bg-white/[0.10] hover:text-white',
     label:        'text-white/30',
     card:         'border-white/[0.08] bg-white/[0.03] hover:border-white/[0.18] hover:bg-white/[0.07]',
-    cardLinked:   'border-white/[0.08] bg-white/[0.03] hover:border-violet-500/40 hover:bg-white/[0.07] cursor-pointer',
     cardName:     'text-white/90',
     cardDesc:     'text-white/45',
     cardSimple:   'text-white/30',
@@ -149,14 +159,12 @@ const T = {
     pill:         'border-gray-200 bg-white',
     pillDot:      'bg-emerald-500',
     pillText:     'text-gray-500',
-    titleFrom:    '#111111',
-    titleTo:      'rgba(30,30,30,0.55)',
+    titleGrad:    'bg-gradient-to-b from-gray-900 to-gray-600',
     subtitle:     'text-gray-500',
     btnPrimary:   'bg-gray-900 text-white hover:bg-gray-800',
     btnSecondary: 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50',
     label:        'text-gray-400',
-    card:         'border-gray-200/80 bg-white hover:border-gray-300 hover:shadow-sm',
-    cardLinked:   'border-gray-200/80 bg-white hover:border-violet-300 hover:shadow-md cursor-pointer',
+    card:         'border-gray-200/80 bg-white hover:border-violet-300 hover:shadow-md',
     cardName:     'text-gray-900',
     cardDesc:     'text-gray-500',
     cardSimple:   'text-gray-400',
@@ -166,15 +174,7 @@ const T = {
 }
 
 export function LandingPage() {
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('rsk-theme')
-    return saved ? saved === 'dark' : true
-  })
-
-  useEffect(() => {
-    localStorage.setItem('rsk-theme', isDark ? 'dark' : 'light')
-  }, [isDark])
-
+  const { isDark, toggle } = useThemeStore()
   const t = isDark ? T.dark : T.light
 
   return (
@@ -204,9 +204,8 @@ export function LandingPage() {
               </Link>
             ))}
           </nav>
-          {/* Theme toggle */}
           <button
-            onClick={() => setIsDark(!isDark)}
+            onClick={toggle}
             aria-label="테마 전환"
             className={`ml-3 flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${t.toggle}`}
           >
@@ -225,16 +224,8 @@ export function LandingPage() {
           </span>
         </div>
 
-        {/* Title */}
-        <h1
-          className="mb-5 text-6xl font-bold tracking-tight md:text-7xl"
-          style={{
-            background: `linear-gradient(180deg, ${t.titleFrom} 0%, ${t.titleTo} 100%)`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
+        {/* Title — Tailwind bg-clip-text 방식 (inline style 제거) */}
+        <h1 className={`mb-5 bg-clip-text text-6xl font-bold tracking-tight text-transparent md:text-7xl ${t.titleGrad}`}>
           React Starter Kit
         </h1>
 
@@ -274,10 +265,10 @@ export function LandingPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {stack.map((item) => {
-            const cardClass = `group rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200 ${item.to ? t.cardLinked : t.card}`
+            const cardClass = `group rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200 ${t.card}`
+
             const inner = (
               <>
-                {/* Card header */}
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <span className={`text-sm font-semibold ${t.cardName}`}>{item.name}</span>
                   <div className="flex items-center gap-1.5">
@@ -286,38 +277,36 @@ export function LandingPage() {
                         v{item.version}
                       </span>
                     )}
-                    {item.to && (
-                      <ArrowUpRight className={`h-3.5 w-3.5 transition-colors ${t.cardArrow}`} />
-                    )}
+                    <ArrowUpRight className={`h-3.5 w-3.5 transition-colors ${t.cardArrow}`} />
                   </div>
                 </div>
 
-                {/* Short tech description */}
                 <p className={`mb-3 text-xs leading-relaxed ${t.cardDesc}`}>{item.description}</p>
 
-                {/* Divider */}
                 <div className={`mb-3 border-t ${t.divider}`} />
 
-                {/* Beginner-friendly description */}
                 <p className={`text-xs leading-relaxed ${t.cardSimple}`}>{item.simple}</p>
 
-                {/* "예시 보기" hint */}
-                {item.to && (
-                  <p className={`mt-3 text-[10px] font-medium transition-colors ${t.cardArrow}`}>
-                    예시 보기 →
-                  </p>
-                )}
+                <p className={`mt-3 text-[10px] font-medium transition-colors ${t.cardArrow}`}>
+                  {item.internal ? '예시 보기 →' : '공식 문서 ↗'}
+                </p>
               </>
             )
 
-            return item.to ? (
-              <Link key={item.name} to={item.to} className={cardClass}>
+            return item.internal ? (
+              <Link key={item.name} to={item.href} className={cardClass}>
                 {inner}
               </Link>
             ) : (
-              <div key={item.name} className={cardClass}>
+              <a
+                key={item.name}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cardClass}
+              >
                 {inner}
-              </div>
+              </a>
             )
           })}
         </div>
