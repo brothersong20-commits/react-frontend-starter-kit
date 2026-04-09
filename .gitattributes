@@ -1,0 +1,6 @@
+# 모든 텍스트 파일의 라인 엔딩을 LF로 통일 (macOS ↔ Windows 호환)
+* text=auto eol=lf
+
+# Windows 배치 파일은 예외적으로 CRLF 유지
+*.bat text eol=crlf
+*.cmd text eol=crlf
