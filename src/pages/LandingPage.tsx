@@ -266,13 +266,21 @@ export function LandingPage() {
               </Link>
             ))}
           </nav>
-          <button
-            onClick={toggle}
-            aria-label="테마 전환"
-            className={`ml-3 flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${t.toggle}`}
-          >
-            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/login"
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-150 ${t.navLink}`}
+            >
+              로그인
+            </Link>
+            <button
+              onClick={toggle}
+              aria-label="테마 전환"
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${t.toggle}`}
+            >
+              {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+          </div>
         </div>
       </header>
 

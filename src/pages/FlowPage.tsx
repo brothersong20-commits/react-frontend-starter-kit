@@ -1,204 +1,274 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   ReactFlow,
   addEdge,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   Controls,
   MiniMap,
   Background,
   BackgroundVariant,
+  Handle,
+  Panel,
+  Position,
   type Connection,
+  type Node,
+  type Edge,
+  type NodeChange,
+  type EdgeChange,
+  type NodeProps,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info, Lightbulb, Rocket, Sparkles } from 'lucide-react'
+import { useThemeStore } from '@/store/useThemeStore'
+
+// ─── 커스텀 노드: 동서남북 4방향 핸들 ───────────────────────────
+// 각 방향에 source + target 핸들을 겹쳐 배치 → 어느 방향으로든 연결 가능
+function MultiHandleNode({ data }: NodeProps) {
+  const borderColor = (data.borderColor as string) ?? '#555'
+  const hs = { width: 8, height: 8 } // 핸들 크기
+
+  return (
+    <div
+      className="bg-background text-foreground text-xs font-medium px-3 py-1.5 rounded-lg"
+      style={{ border: `2px solid ${borderColor}`, minWidth: 80, textAlign: 'center' }}
+    >
+      {/* 북(Top) */}
+      <Handle type="target" position={Position.Top} id="top-t" style={hs} />
+      <Handle type="source" position={Position.Top} id="top-s" style={hs} />
+      {/* 동(Right) */}
+      <Handle type="target" position={Position.Right} id="right-t" style={hs} />
+      <Handle type="source" position={Position.Right} id="right-s" style={hs} />
+      {/* 남(Bottom) */}
+      <Handle type="target" position={Position.Bottom} id="bottom-t" style={hs} />
+      <Handle type="source" position={Position.Bottom} id="bottom-s" style={hs} />
+      {/* 서(Left) */}
+      <Handle type="target" position={Position.Left} id="left-t" style={hs} />
+      <Handle type="source" position={Position.Left} id="left-s" style={hs} />
+      {data.label as string}
+    </div>
+  )
+}
+
+// ─── Undo/Redo 히스토리 훅 ─────────────────────────────────────
+// 노드·엣지 삭제 / 드래그 완료 / 연결 시 스냅샷 저장 → undo/redo 지원
+function useFlowHistory(initNodes: Node[], initEdges: Edge[]) {
+  const [nodes, setNodes, baseOnNodesChange] = useNodesState(initNodes)
+  const [edges, setEdges, baseOnEdgesChange] = useEdgesState(initEdges)
+  const [past, setPast] = useState<Array<{ nodes: Node[]; edges: Edge[] }>>([])
+  const [future, setFuture] = useState<Array<{ nodes: Node[]; edges: Edge[] }>>([])
+
+  // 현재 상태를 과거 스택에 저장
+  const snapshot = useCallback(() => {
+    setPast((p) => [...p.slice(-19), { nodes, edges }])
+    setFuture([])
+  }, [nodes, edges])
+
+  // 삭제 변경 시 자동 스냅샷
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      if (changes.some((c) => c.type === 'remove')) snapshot()
+      baseOnNodesChange(changes)
+    },
+    [snapshot, baseOnNodesChange]
+  )
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      if (changes.some((c) => c.type === 'remove')) snapshot()
+      baseOnEdgesChange(changes)
+    },
+    [snapshot, baseOnEdgesChange]
+  )
+
+  const undo = useCallback(() => {
+    if (!past.length) return
+    const prev = past[past.length - 1]
+    setFuture((f) => [{ nodes, edges }, ...f.slice(0, 19)])
+    setPast((p) => p.slice(0, -1))
+    setNodes(prev.nodes)
+    setEdges(prev.edges)
+  }, [past, nodes, edges, setNodes, setEdges])
+
+  const redo = useCallback(() => {
+    if (!future.length) return
+    const next = future[0]
+    setPast((p) => [...p.slice(-19), { nodes, edges }])
+    setFuture((f) => f.slice(1))
+    setNodes(next.nodes)
+    setEdges(next.edges)
+  }, [future, nodes, edges, setNodes, setEdges])
+
+  return {
+    nodes, edges,
+    onNodesChange, onEdgesChange, setEdges,
+    snapshot, undo, redo,
+    canUndo: past.length > 0,
+    canRedo: future.length > 0,
+  }
+}
+
+// ─── 되돌리기·삭제 컨트롤 패널 ─────────────────────────────────
+// ReactFlow 컨텍스트 내부에서 렌더되므로 useReactFlow 사용 가능
+function FlowControls({
+  onUndo, onRedo, canUndo, canRedo,
+}: {
+  onUndo: () => void
+  onRedo: () => void
+  canUndo: boolean
+  canRedo: boolean
+}) {
+  const { setNodes, setEdges } = useReactFlow()
+
+  // 선택된 노드·엣지 삭제
+  const deleteSelected = useCallback(() => {
+    setNodes((nds) => nds.filter((n) => !n.selected))
+    setEdges((eds) => eds.filter((e) => !e.selected))
+  }, [setNodes, setEdges])
+
+  const btn =
+    'rounded border border-border bg-background px-2 py-1 text-[11px] text-foreground hover:bg-muted disabled:opacity-30 cursor-pointer disabled:cursor-default'
+
+  return (
+    <Panel position="top-right" className="flex gap-1 m-2">
+      <button onClick={onUndo} disabled={!canUndo} title="되돌리기" className={btn}>↩ 되돌리기</button>
+      <button onClick={onRedo} disabled={!canRedo} title="앞돌리기" className={btn}>↪ 앞돌리기</button>
+      <button
+        onClick={deleteSelected}
+        title="선택한 노드·엣지 삭제 (Delete 키도 가능)"
+        className="rounded border border-red-500/40 bg-background px-2 py-1 text-[11px] text-red-400 hover:bg-red-500/10 cursor-pointer"
+      >
+        ✕ 삭제
+      </button>
+    </Panel>
+  )
+}
 
 // ─── 예시 1: 주문 처리 플로우 ───────────────────────────────────
 const orderNodes = [
-  {
-    id: '1',
-    position: { x: 60, y: 160 },
-    data: { label: '주문 접수' },
-    type: 'input',
-    style: { background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: 8 },
-  },
-  {
-    id: '2',
-    position: { x: 280, y: 60 },
-    data: { label: '결제 처리' },
-    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
-  },
-  {
-    id: '3',
-    position: { x: 280, y: 260 },
-    data: { label: '재고 확인' },
-    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
-  },
-  {
-    id: '4',
-    position: { x: 500, y: 160 },
-    data: { label: '배송 준비' },
-    style: { background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8 },
-  },
-  {
-    id: '5',
-    position: { x: 700, y: 160 },
-    data: { label: '배송 완료' },
-    type: 'output',
-    style: { background: '#ede9fe', border: '1px solid #c4b5fd', borderRadius: 8 },
-  },
+  { id: '1', type: 'multiHandle', position: { x: 200, y: 0 },   data: { label: '주문 접수', borderColor: '#93c5fd' } },
+  { id: '2', type: 'multiHandle', position: { x: 60,  y: 130 }, data: { label: '결제 처리', borderColor: '#fde047' } },
+  { id: '3', type: 'multiHandle', position: { x: 340, y: 130 }, data: { label: '재고 확인', borderColor: '#fde047' } },
+  { id: '4', type: 'multiHandle', position: { x: 200, y: 260 }, data: { label: '배송 준비', borderColor: '#6ee7b7' } },
+  { id: '5', type: 'multiHandle', position: { x: 430, y: 260 }, data: { label: '배송 완료', borderColor: '#c4b5fd' } },
 ]
 
 const orderEdges = [
-  { id: 'e1-2', source: '1', target: '2', animated: true, label: '결제 요청' },
-  { id: 'e1-3', source: '1', target: '3', animated: true, label: '재고 요청' },
-  { id: 'e2-4', source: '2', target: '4', label: '결제 완료' },
-  { id: 'e3-4', source: '3', target: '4', label: '재고 확인 완료' },
-  { id: 'e4-5', source: '4', target: '5', animated: true, label: '배송 출발' },
+  { id: 'e1-2', source: '1', sourceHandle: 'bottom-s', target: '2', targetHandle: 'top-t',    animated: true, label: '결제 요청' },
+  { id: 'e1-3', source: '1', sourceHandle: 'bottom-s', target: '3', targetHandle: 'top-t',    animated: true, label: '재고 요청' },
+  { id: 'e2-4', source: '2', sourceHandle: 'bottom-s', target: '4', targetHandle: 'top-t',    label: '결제 완료' },
+  { id: 'e3-4', source: '3', sourceHandle: 'bottom-s', target: '4', targetHandle: 'top-t',    label: '재고 확인 완료' },
+  { id: 'e4-5', source: '4', sourceHandle: 'right-s',  target: '5', targetHandle: 'left-t',   animated: true, label: '배송 출발' },
 ]
 
 // ─── 예시 2: AI 에이전트 파이프라인 ───────────────────────────────
 const agentNodes = [
-  {
-    id: 'a1',
-    position: { x: 60, y: 80 },
-    data: { label: '사용자 입력' },
-    type: 'input',
-    style: { background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: 8 },
-  },
-  {
-    id: 'a2',
-    position: { x: 280, y: 30 },
-    data: { label: '의도 분석 Agent' },
-    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
-  },
-  {
-    id: 'a3',
-    position: { x: 280, y: 140 },
-    data: { label: 'RAG 검색 Agent' },
-    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
-  },
-  {
-    id: 'a4',
-    position: { x: 500, y: 80 },
-    data: { label: '응답 생성 Agent' },
-    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
-  },
-  {
-    id: 'a5',
-    position: { x: 700, y: 80 },
-    data: { label: '최종 출력' },
-    type: 'output',
-    style: { background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8 },
-  },
+  { id: 'a1', type: 'multiHandle', position: { x: 150, y: 0 },   data: { label: '사용자 입력',    borderColor: '#93c5fd' } },
+  { id: 'a2', type: 'multiHandle', position: { x: 0,   y: 130 }, data: { label: '의도 분석 Agent', borderColor: '#f9a8d4' } },
+  { id: 'a3', type: 'multiHandle', position: { x: 300, y: 130 }, data: { label: 'RAG 검색 Agent',  borderColor: '#f9a8d4' } },
+  { id: 'a4', type: 'multiHandle', position: { x: 150, y: 260 }, data: { label: '응답 생성 Agent', borderColor: '#fde047' } },
+  { id: 'a5', type: 'multiHandle', position: { x: 380, y: 260 }, data: { label: '최종 출력',       borderColor: '#6ee7b7' } },
 ]
 
 const agentEdges = [
-  { id: 'ae1-2', source: 'a1', target: 'a2', animated: true },
-  { id: 'ae1-3', source: 'a1', target: 'a3', animated: true },
-  { id: 'ae2-4', source: 'a2', target: 'a4' },
-  { id: 'ae3-4', source: 'a3', target: 'a4' },
-  { id: 'ae4-5', source: 'a4', target: 'a5', animated: true },
+  { id: 'ae1-2', source: 'a1', sourceHandle: 'bottom-s', target: 'a2', targetHandle: 'top-t',  animated: true },
+  { id: 'ae1-3', source: 'a1', sourceHandle: 'bottom-s', target: 'a3', targetHandle: 'top-t',  animated: true },
+  { id: 'ae2-4', source: 'a2', sourceHandle: 'bottom-s', target: 'a4', targetHandle: 'top-t' },
+  { id: 'ae3-4', source: 'a3', sourceHandle: 'bottom-s', target: 'a4', targetHandle: 'top-t' },
+  { id: 'ae4-5', source: 'a4', sourceHandle: 'right-s',  target: 'a5', targetHandle: 'left-t', animated: true },
 ]
 
 // ─── 예시 3: 플랜트 건설 설계 검토 절차 (EPC) ────────────────────
 const plantNodes = [
-  {
-    id: 'p1',
-    position: { x: 40, y: 200 },
-    data: { label: '설계 착수' },
-    type: 'input',
-    style: { background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: 8 },
-  },
-  {
-    id: 'p2',
-    position: { x: 210, y: 200 },
-    data: { label: '기본 설계 (Basic Engineering)' },
-    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
-  },
-  {
-    id: 'p3',
-    position: { x: 400, y: 60 },
-    data: { label: '공정 설계 (P&ID)' },
-    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
-  },
-  {
-    id: 'p4',
-    position: { x: 400, y: 160 },
-    data: { label: '배관/기계 설계 (3D 모델링)' },
-    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
-  },
-  {
-    id: 'p5',
-    position: { x: 400, y: 260 },
-    data: { label: '구조/토목 설계' },
-    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
-  },
-  {
-    id: 'p6',
-    position: { x: 400, y: 360 },
-    data: { label: '전기/계장 설계' },
-    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
-  },
-  {
-    id: 'p7',
-    position: { x: 590, y: 200 },
-    data: { label: 'HAZOP 안전성 검토' },
-    style: { background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8 },
-  },
-  {
-    id: 'p8',
-    position: { x: 740, y: 200 },
-    data: { label: '발주처(Client) 검토' },
-    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
-  },
-  {
-    id: 'p9',
-    position: { x: 890, y: 200 },
-    data: { label: 'IFC 설계 확정' },
-    type: 'output',
-    style: { background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8 },
-  },
+  { id: 'p1', type: 'multiHandle', position: { x: 0,   y: 0   }, data: { label: '설계 착수',          borderColor: '#93c5fd' } },
+  { id: 'p2', type: 'multiHandle', position: { x: 170, y: 0   }, data: { label: '기본 설계',           borderColor: '#fde047' } },
+  { id: 'p3', type: 'multiHandle', position: { x: 0,   y: 120 }, data: { label: '공정 설계 (P&ID)',    borderColor: '#f9a8d4' } },
+  { id: 'p4', type: 'multiHandle', position: { x: 170, y: 120 }, data: { label: '배관/기계 설계',      borderColor: '#f9a8d4' } },
+  { id: 'p5', type: 'multiHandle', position: { x: 340, y: 120 }, data: { label: '구조/토목 설계',      borderColor: '#f9a8d4' } },
+  { id: 'p6', type: 'multiHandle', position: { x: 510, y: 120 }, data: { label: '전기/계장 설계',      borderColor: '#f9a8d4' } },
+  { id: 'p7', type: 'multiHandle', position: { x: 255, y: 250 }, data: { label: 'HAZOP 안전성 검토',   borderColor: '#fca5a5' } },
+  { id: 'p8', type: 'multiHandle', position: { x: 450, y: 250 }, data: { label: '발주처(Client) 검토', borderColor: '#fde047' } },
+  { id: 'p9', type: 'multiHandle', position: { x: 640, y: 250 }, data: { label: 'IFC 설계 확정',       borderColor: '#6ee7b7' } },
 ]
 
 const plantEdges = [
-  { id: 'pe1-2', source: 'p1', target: 'p2', animated: true, label: '착수 승인' },
-  { id: 'pe2-3', source: 'p2', target: 'p3', animated: true, label: 'P&ID 착수' },
-  { id: 'pe2-4', source: 'p2', target: 'p4', animated: true, label: '3D 모델 착수' },
-  { id: 'pe2-5', source: 'p2', target: 'p5', animated: true, label: '구조 착수' },
-  { id: 'pe2-6', source: 'p2', target: 'p6', animated: true, label: '계장 착수' },
-  { id: 'pe3-7', source: 'p3', target: 'p7', label: 'P&ID 확정' },
-  { id: 'pe4-7', source: 'p4', target: 'p7', label: '모델 확정' },
-  { id: 'pe5-7', source: 'p5', target: 'p7', label: '구조 확정' },
-  { id: 'pe6-7', source: 'p6', target: 'p7', label: '계장 확정' },
-  { id: 'pe7-8', source: 'p7', target: 'p8', animated: true, label: 'HAZOP 통과' },
-  { id: 'pe8-9', source: 'p8', target: 'p9', animated: true, label: 'Client 승인' },
+  { id: 'pe1-2', source: 'p1', sourceHandle: 'right-s',  target: 'p2', targetHandle: 'left-t',   animated: true, label: '착수 승인' },
+  { id: 'pe2-3', source: 'p2', sourceHandle: 'bottom-s', target: 'p3', targetHandle: 'top-t',    animated: true, label: 'P&ID 착수' },
+  { id: 'pe2-4', source: 'p2', sourceHandle: 'bottom-s', target: 'p4', targetHandle: 'top-t',    animated: true, label: '3D 착수' },
+  { id: 'pe2-5', source: 'p2', sourceHandle: 'bottom-s', target: 'p5', targetHandle: 'top-t',    animated: true, label: '구조 착수' },
+  { id: 'pe2-6', source: 'p2', sourceHandle: 'bottom-s', target: 'p6', targetHandle: 'top-t',    animated: true, label: '계장 착수' },
+  { id: 'pe3-7', source: 'p3', sourceHandle: 'bottom-s', target: 'p7', targetHandle: 'top-t',    label: 'P&ID 확정' },
+  { id: 'pe4-7', source: 'p4', sourceHandle: 'bottom-s', target: 'p7', targetHandle: 'top-t',    label: '모델 확정' },
+  { id: 'pe5-7', source: 'p5', sourceHandle: 'bottom-s', target: 'p7', targetHandle: 'top-t',    label: '구조 확정' },
+  { id: 'pe6-7', source: 'p6', sourceHandle: 'bottom-s', target: 'p7', targetHandle: 'top-t',    label: '계장 확정' },
+  { id: 'pe7-8', source: 'p7', sourceHandle: 'right-s',  target: 'p8', targetHandle: 'left-t',   animated: true, label: 'HAZOP 통과' },
+  { id: 'pe8-9', source: 'p8', sourceHandle: 'right-s',  target: 'p9', targetHandle: 'left-t',   animated: true, label: 'Client 승인' },
 ]
 
+// ─── 예시 4: 엣지 타입 비교 ───────────────────────────────────────
+// 각 행: source(x:0) → target(x:340), y 간격 80px
+const ROW_GAP = 80
+const edgeTypeRows = [
+  { label: 'default (bezier)', type: 'default', animated: false, color: undefined, width: undefined },
+  { label: 'straight', type: 'straight', animated: false, color: undefined, width: undefined },
+  { label: 'step', type: 'step', animated: false, color: undefined, width: undefined },
+  { label: 'smoothstep', type: 'smoothstep', animated: false, color: undefined, width: undefined },
+  { label: 'simplebezier', type: 'simplebezier', animated: false, color: undefined, width: undefined },
+  { label: 'animated (bezier)', type: 'default', animated: true, color: undefined, width: undefined },
+  { label: 'style: stroke + strokeWidth', type: 'default', animated: false, color: '#f9a8d4', width: 3 },
+]
+
+const edgeTypeNodes = edgeTypeRows.flatMap((_, i) => [
+  {
+    id: `es${i}`,
+    position: { x: 0, y: i * ROW_GAP },
+    data: { label: '시작' },
+    style: { border: '2px solid #93c5fd', borderRadius: 8, fontSize: 11 },
+  },
+  {
+    id: `et${i}`,
+    position: { x: 340, y: i * ROW_GAP },
+    data: { label: '끝' },
+    style: { border: '2px solid #6ee7b7', borderRadius: 8, fontSize: 11 },
+  },
+])
+
+const edgeTypeEdges = edgeTypeRows.map((row, i) => ({
+  id: `ee${i}`,
+  source: `es${i}`,
+  target: `et${i}`,
+  type: row.type,
+  animated: row.animated,
+  label: row.label,
+  style: row.color ? { stroke: row.color, strokeWidth: row.width ?? 1 } : undefined,
+}))
+
 export function FlowPage() {
-  const [orderNodesState, , onOrderNodesChange] = useNodesState(orderNodes)
-  const [orderEdgesState, setOrderEdges, onOrderEdgesChange] = useEdgesState(orderEdges)
+  const isDark = useThemeStore((state) => state.isDark)
+  const colorMode = isDark ? 'dark' : 'light'
 
-  const [agentNodesState, , onAgentNodesChange] = useNodesState(agentNodes)
-  const [agentEdgesState, setAgentEdges, onAgentEdgesChange] = useEdgesState(agentEdges)
+  // nodeTypes는 렌더마다 재생성되면 안 되므로 useMemo 사용
+  const nodeTypes = useMemo(() => ({ multiHandle: MultiHandleNode }), [])
 
-  const [plantNodesState, , onPlantNodesChange] = useNodesState(plantNodes)
-  const [plantEdgesState, setPlantEdges, onPlantEdgesChange] = useEdgesState(plantEdges)
+  const order = useFlowHistory(orderNodes, orderEdges)
+  const agent = useFlowHistory(agentNodes, agentEdges)
+  const plant = useFlowHistory(plantNodes, plantEdges)
 
   const onOrderConnect = useCallback(
-    (connection: Connection) => setOrderEdges((eds) => addEdge(connection, eds)),
-    [setOrderEdges]
+    (connection: Connection) => { order.snapshot(); order.setEdges((eds) => addEdge(connection, eds)) },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [order.snapshot, order.setEdges]
   )
-
   const onAgentConnect = useCallback(
-    (connection: Connection) => setAgentEdges((eds) => addEdge(connection, eds)),
-    [setAgentEdges]
+    (connection: Connection) => { agent.snapshot(); agent.setEdges((eds) => addEdge(connection, eds)) },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [agent.snapshot, agent.setEdges]
   )
-
   const onPlantConnect = useCallback(
-    (connection: Connection) => setPlantEdges((eds) => addEdge(connection, eds)),
-    [setPlantEdges]
+    (connection: Connection) => { plant.snapshot(); plant.setEdges((eds) => addEdge(connection, eds)) },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plant.snapshot, plant.setEdges]
   )
 
   return (
@@ -247,18 +317,25 @@ export function FlowPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div style={{ height: 380 }} className="rounded-b-lg overflow-hidden">
+          <div style={{ height: 400 }} className="rounded-b-lg overflow-hidden">
             <ReactFlow
-              nodes={orderNodesState}
-              edges={orderEdgesState}
-              onNodesChange={onOrderNodesChange}
-              onEdgesChange={onOrderEdgesChange}
+              nodes={order.nodes}
+              edges={order.edges}
+              onNodesChange={order.onNodesChange}
+              onEdgesChange={order.onEdgesChange}
               onConnect={onOrderConnect}
+              onNodeDragStop={order.snapshot}
+              nodeTypes={nodeTypes}
+              colorMode={colorMode}
+              defaultEdgeOptions={{ type: 'smoothstep' }}
+              deleteKeyCode={['Delete', 'Backspace']}
               fitView
+              fitViewOptions={{ padding: 0.12 }}
             >
               <Controls />
-              <MiniMap />
+              <MiniMap style={{ height: 80, width: 120 }} />
               <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+              <FlowControls onUndo={order.undo} onRedo={order.redo} canUndo={order.canUndo} canRedo={order.canRedo} />
             </ReactFlow>
           </div>
         </CardContent>
@@ -273,17 +350,25 @@ export function FlowPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div style={{ height: 300 }} className="rounded-b-lg overflow-hidden">
+          <div style={{ height: 400 }} className="rounded-b-lg overflow-hidden">
             <ReactFlow
-              nodes={agentNodesState}
-              edges={agentEdgesState}
-              onNodesChange={onAgentNodesChange}
-              onEdgesChange={onAgentEdgesChange}
+              nodes={agent.nodes}
+              edges={agent.edges}
+              onNodesChange={agent.onNodesChange}
+              onEdgesChange={agent.onEdgesChange}
               onConnect={onAgentConnect}
+              onNodeDragStop={agent.snapshot}
+              nodeTypes={nodeTypes}
+              colorMode={colorMode}
+              defaultEdgeOptions={{ type: 'smoothstep' }}
+              deleteKeyCode={['Delete', 'Backspace']}
               fitView
+              fitViewOptions={{ padding: 0.12 }}
             >
               <Controls />
+              <MiniMap style={{ height: 80, width: 120 }} />
               <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+              <FlowControls onUndo={agent.undo} onRedo={agent.redo} canUndo={agent.canUndo} canRedo={agent.canRedo} />
             </ReactFlow>
           </div>
         </CardContent>
@@ -302,26 +387,100 @@ export function FlowPage() {
         <CardContent className="p-0">
           <div style={{ height: 420 }} className="rounded-b-lg overflow-hidden">
             <ReactFlow
-              nodes={plantNodesState}
-              edges={plantEdgesState}
-              onNodesChange={onPlantNodesChange}
-              onEdgesChange={onPlantEdgesChange}
+              nodes={plant.nodes}
+              edges={plant.edges}
+              onNodesChange={plant.onNodesChange}
+              onEdgesChange={plant.onEdgesChange}
               onConnect={onPlantConnect}
+              onNodeDragStop={plant.snapshot}
+              nodeTypes={nodeTypes}
+              colorMode={colorMode}
+              defaultEdgeOptions={{ type: 'smoothstep' }}
+              deleteKeyCode={['Delete', 'Backspace']}
               fitView
-              fitViewOptions={{ padding: 0.15 }}
+              fitViewOptions={{ padding: 0.12 }}
             >
               <Controls />
-              <MiniMap />
+              <MiniMap style={{ height: 80, width: 120 }} />
+              <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+              <FlowControls onUndo={plant.undo} onRedo={plant.redo} canUndo={plant.canUndo} canRedo={plant.canRedo} />
+            </ReactFlow>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 예시 4: 엣지 타입 & 스타일 옵션 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 4 — 엣지(연결선) 타입 & 스타일 옵션</CardTitle>
+          <CardDescription>
+            ReactFlow가 제공하는 5가지 내장 엣지 타입과 색상·두께·화살표 커스터마이징 옵션을
+            한눈에 비교합니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div style={{ height: 520 }} className="rounded-b-lg overflow-hidden">
+            <ReactFlow
+              nodes={edgeTypeNodes}
+              edges={edgeTypeEdges}
+              colorMode={colorMode}
+              fitView
+              fitViewOptions={{ padding: 0.1 }}
+              nodesDraggable={false}
+              nodesConnectable={false}
+              elementsSelectable={false}
+            >
+              <Controls />
               <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
             </ReactFlow>
           </div>
         </CardContent>
       </Card>
 
-      {/* 예시 4: 노드 데이터 구조 */}
+      {/* 예시 4-2: 엣지 옵션 코드 */}
       <Card>
         <CardHeader>
-          <CardTitle>예시 4 — 노드/엣지 데이터 구조</CardTitle>
+          <CardTitle className="text-sm">엣지 주요 옵션 코드 예시</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`import { MarkerType } from '@xyflow/react'
+
+const edges = [
+  // ① 기본 (bezier 곡선 — 타입 생략 시 기본값)
+  { id: 'e1', source: '1', target: '2' },
+
+  // ② 엣지 타입 직접 지정
+  { id: 'e2', source: '1', target: '2', type: 'straight'    },  // 직선
+  { id: 'e3', source: '1', target: '2', type: 'step'        },  // 90° 꺾임
+  { id: 'e4', source: '1', target: '2', type: 'smoothstep'  },  // 부드럽게 꺾임
+  { id: 'e5', source: '1', target: '2', type: 'simplebezier'},  // 단순 베지어
+
+  // ③ 점선 애니메이션
+  { id: 'e6', source: '1', target: '2', animated: true },
+
+  // ④ 라벨 텍스트
+  { id: 'e7', source: '1', target: '2', label: '승인 완료' },
+
+  // ⑤ 색상·두께 커스터마이징
+  { id: 'e8', source: '1', target: '2',
+    style: { stroke: '#f9a8d4', strokeWidth: 3 } },
+
+  // ⑥ 화살표 마커 (시작/끝)
+  { id: 'e9', source: '1', target: '2',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#6ee7b7' } },
+]
+
+// ReactFlow 전체 기본 엣지 타입 일괄 지정
+<ReactFlow defaultEdgeOptions={{ type: 'smoothstep' }} ... />`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 5: 노드 데이터 구조 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 5 — 노드/엣지 데이터 구조</CardTitle>
           <CardDescription>
             API 응답 데이터를 그대로 nodes/edges 배열로 변환해서 동적 다이어그램을 생성할 수
             있습니다.
@@ -361,7 +520,7 @@ const edges = [
       {/* 예시 5: 커스텀 노드 컴포넌트 */}
       <Card>
         <CardHeader>
-          <CardTitle>예시 5 — 커스텀 노드 컴포넌트</CardTitle>
+          <CardTitle>예시 6 — 커스텀 노드 컴포넌트</CardTitle>
           <CardDescription>
             기본 사각형 노드 대신 React 컴포넌트로 만든 커스텀 노드를 사용하면 아이콘,
             상태 표시, 버튼 등을 자유롭게 넣을 수 있습니다.
@@ -409,7 +568,7 @@ const nodes = [
       {/* 예시 6: API 데이터로 동적 다이어그램 */}
       <Card>
         <CardHeader>
-          <CardTitle>예시 6 — API 데이터 → 동적 다이어그램</CardTitle>
+          <CardTitle>예시 7 — API 데이터 → 동적 다이어그램</CardTitle>
           <CardDescription>
             서버에서 받은 데이터를 nodes/edges 배열로 변환해서 실시간 다이어그램을 만드는
             패턴입니다. TanStack Query와 함께 사용합니다.

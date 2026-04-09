@@ -2,6 +2,8 @@
 
 이 파일은 Claude Code (claude.ai/code)가 이 저장소에서 작업할 때 참고하는 안내 문서입니다.
 
+> AI 바이브 코딩 입문자를 위한 React 생태계 실습 스타터킷 (교육 목적).
+
 ## 명령어
 
 ```bash
@@ -12,16 +14,34 @@ npm run format    # Prettier 포맷팅 (TS, TSX, CSS)
 npm run preview   # 프로덕션 빌드 미리보기
 ```
 
+## 핵심 의존성 버전
+
+| 라이브러리 | 버전 | 비고 |
+|---|---|---|
+| React | 19.x | 동시성 렌더링 |
+| Vite | 8.x | `@tailwindcss/vite` 플러그인 |
+| TypeScript | 6.x | strict 모드 |
+| React Router | 7.x | |
+| Zustand | 5.x | persist 미들웨어 |
+| TanStack Query | 5.x | |
+| React Hook Form | 7.x | + Zod 4.x (`@hookform/resolvers`) |
+| @xyflow/react | 12.x | 노드·엣지 다이어그램 |
+| Tailwind CSS | 4.x | CSS-first 구성 (`@import "tailwindcss"`) |
+| shadcn/ui | latest | New York 스타일, zinc 기본색 |
+
 ## 아키텍처
 
 ### 진입점 및 라우팅
 
-- `src/main.tsx` — React 19 루트, TanStack Query 설정, FOUC 방지를 위한 테마 퍼시스턴스 (`localStorage` `'rsk-theme'` 키)
+- `src/main.tsx` — React 19 루트, TanStack Query 설정, FOUC 방지 테마 퍼시스턴스 (`localStorage` `'rsk-theme'` 키), `window.error` / `unhandledrejection` 전역 에러 핸들러
 - `src/App.tsx` — React Router v7, 총 6개 라우트; 내부 라우트는 모두 `AppLayout`으로 감싸짐
 
 라우트 구성:
-- `/` → `LandingPage` (기술 스택 쇼케이스, 레이아웃 없음)
+- `/` → `LandingPage` (정적 import — 즉시 렌더링, 레이아웃 없음)
 - `/zustand`, `/query`, `/form`, `/flow`, `/components` → `AppLayout` 내부 (사이드바 + outlet)
+
+코드 스플리팅:
+- `LandingPage`만 정적 import; 나머지 5개 페이지는 `React.lazy()` + `Suspense`로 분리
 
 ### 테마 시스템
 
@@ -31,13 +51,20 @@ npm run preview   # 프로덕션 빌드 미리보기
 
 ### 상태 관리
 
-- **클라이언트 상태:** Zustand (`src/store/`) — `useThemeStore`, `useCounterStore`
-- **서버 상태:** TanStack Query — `src/api/queries.ts`의 `useUsers()` (JSONPlaceholder API)
+- **클라이언트 상태:** Zustand (`src/store/`)
+  - `useThemeStore` — 다크/라이트 모드 (persist, localStorage `'rsk-theme'`)
+  - `useCounterStore` — 카운터 (inc / dec / reset)
+  - `useCartStore` — 장바구니 (`CartItem[]`, addItem / removeItem / clearCart)
+- **서버 상태:** TanStack Query (`src/api/queries.ts`, JSONPlaceholder API)
+  - `useUsers()` — GET /users, queryKey: `['users']`
+  - `usePosts()` — GET /posts?_limit=5, queryKey: `['posts']`
+  - `useCreatePost()` — `useMutation`, POST /posts; `onSuccess`에서 `['posts']` invalidate
 
 ### UI 컴포넌트
 
 - shadcn/ui (new-york 스타일, zinc 기본색, CSS 변수) — `src/components/ui/`에 위치
-- 새 shadcn 컴포넌트 추가: `npx shadcn@latest add <컴포넌트명>`
+- 현재 설치된 컴포넌트: `Button` `Badge` `Card` `Input` `Label` `Separator`
+- 새 컴포넌트 추가: `npx shadcn@latest add <컴포넌트명>`
 - `cn()` 유틸리티: `src/lib/utils.ts` (clsx + tailwind-merge)
 
 ### 경로 별칭

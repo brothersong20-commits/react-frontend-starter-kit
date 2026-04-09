@@ -9,6 +9,7 @@ const QueryPage = lazy(() => import('@/pages/QueryPage').then((m) => ({ default:
 const FormPage = lazy(() => import('@/pages/FormPage').then((m) => ({ default: m.FormPage })))
 const FlowPage = lazy(() => import('@/pages/FlowPage').then((m) => ({ default: m.FlowPage })))
 const ComponentsPage = lazy(() => import('@/pages/ComponentsPage').then((m) => ({ default: m.ComponentsPage })))
+const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
 
 // 지연 로딩 중 표시할 폴백
 function PageFallback() {
@@ -21,6 +22,7 @@ function PageFallback() {
 
 const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
+  { path: '/login', element: <Suspense fallback={<PageFallback />}><LoginPage /></Suspense> },
   {
     element: <AppLayout />,
     children: [
