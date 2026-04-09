@@ -130,10 +130,8 @@ const usageSteps = [
     how: 'Zustand 스토어를 만들면 props 없이 어디서든 꺼내 쓸 수 있습니다',
     link: '/zustand',
     label: 'Zustand 예시 보기',
-    colorDark: 'border-orange-500/20 bg-orange-500/5',
-    colorLight: 'border-orange-200 bg-orange-50',
-    badgeDark: 'bg-orange-500/20 text-orange-300',
-    badgeLight: 'bg-orange-100 text-orange-700',
+    color: { dark: 'border-orange-500/20 bg-orange-500/5', light: 'border-orange-200 bg-orange-50' },
+    badge: { dark: 'bg-orange-500/20 text-orange-300', light: 'bg-orange-100 text-orange-700' },
   },
   {
     step: '02',
@@ -142,10 +140,8 @@ const usageSteps = [
     how: 'TanStack Query의 useQuery로 API 연동 + 캐싱을 자동화하세요',
     link: '/query',
     label: 'TanStack Query 예시 보기',
-    colorDark: 'border-rose-500/20 bg-rose-500/5',
-    colorLight: 'border-rose-200 bg-rose-50',
-    badgeDark: 'bg-rose-500/20 text-rose-300',
-    badgeLight: 'bg-rose-100 text-rose-700',
+    color: { dark: 'border-rose-500/20 bg-rose-500/5', light: 'border-rose-200 bg-rose-50' },
+    badge: { dark: 'bg-rose-500/20 text-rose-300', light: 'bg-rose-100 text-rose-700' },
   },
   {
     step: '03',
@@ -154,10 +150,8 @@ const usageSteps = [
     how: 'React Hook Form + Zod로 폼 상태와 검증 규칙을 동시에 선언하세요',
     link: '/form',
     label: 'Form 예시 보기',
-    colorDark: 'border-pink-500/20 bg-pink-500/5',
-    colorLight: 'border-pink-200 bg-pink-50',
-    badgeDark: 'bg-pink-500/20 text-pink-300',
-    badgeLight: 'bg-pink-100 text-pink-700',
+    color: { dark: 'border-pink-500/20 bg-pink-500/5', light: 'border-pink-200 bg-pink-50' },
+    badge: { dark: 'bg-pink-500/20 text-pink-300', light: 'bg-pink-100 text-pink-700' },
   },
   {
     step: '04',
@@ -166,10 +160,8 @@ const usageSteps = [
     how: '@xyflow/react로 드래그 가능한 노드-엣지 다이어그램을 만드세요',
     link: '/flow',
     label: 'Flow 예시 보기',
-    colorDark: 'border-emerald-500/20 bg-emerald-500/5',
-    colorLight: 'border-emerald-200 bg-emerald-50',
-    badgeDark: 'bg-emerald-500/20 text-emerald-300',
-    badgeLight: 'bg-emerald-100 text-emerald-700',
+    color: { dark: 'border-emerald-500/20 bg-emerald-500/5', light: 'border-emerald-200 bg-emerald-50' },
+    badge: { dark: 'bg-emerald-500/20 text-emerald-300', light: 'bg-emerald-100 text-emerald-700' },
   },
   {
     step: '05',
@@ -178,10 +170,8 @@ const usageSteps = [
     how: 'shadcn/ui 컴포넌트를 명령어 한 줄로 추가하고 바로 커스터마이징하세요',
     link: '/components',
     label: 'Components 예시 보기',
-    colorDark: 'border-zinc-500/20 bg-zinc-500/5',
-    colorLight: 'border-zinc-200 bg-zinc-50',
-    badgeDark: 'bg-zinc-500/20 text-zinc-300',
-    badgeLight: 'bg-zinc-100 text-zinc-600',
+    color: { dark: 'border-zinc-500/20 bg-zinc-500/5', light: 'border-zinc-200 bg-zinc-50' },
+    badge: { dark: 'bg-zinc-500/20 text-zinc-300', light: 'bg-zinc-100 text-zinc-600' },
   },
 ]
 
@@ -212,6 +202,8 @@ const T = {
     cardLinkDoc:     'border border-sky-500/30 text-sky-400/70 group-hover:border-sky-400/60 group-hover:text-sky-300',
     cardLinkExample: 'bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300',
     divider:         'border-white/[0.06]',
+    copyHighlight:   'text-violet-300',
+    copyBody:        'text-white/40',
   },
   light: {
     page:         'bg-[#f4f4f9] text-gray-900',
@@ -238,6 +230,8 @@ const T = {
     cardLinkDoc:     'border border-sky-300 text-sky-600 group-hover:border-sky-400 group-hover:text-sky-700',
     cardLinkExample: 'bg-violet-50 text-violet-600 group-hover:bg-violet-100 group-hover:text-violet-700',
     divider:         'border-gray-100',
+    copyHighlight:   'text-violet-600',
+    copyBody:        'text-gray-500',
   },
 }
 
@@ -306,10 +300,10 @@ export function LandingPage() {
 
         {/* 타겟 카피라이팅 */}
         <div className="mb-10 max-w-lg text-center space-y-3">
-          <p className={`text-lg font-semibold leading-snug ${isDark ? 'text-violet-300' : 'text-violet-600'}`}>
+          <p className={`text-lg font-semibold leading-snug ${t.copyHighlight}`}>
             "AI한테 코드 짜달라고 했는데<br />왜 동작을 안 하는지 모르겠다면"
           </p>
-          <p className={`text-sm leading-relaxed ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+          <p className={`text-sm leading-relaxed ${t.copyBody}`}>
             Claude, ChatGPT와 함께 바이브 코딩하는 입문자를 위해 만들었습니다.<br />
             각 라이브러리가 실제로 어떻게 동작하는지, 어디를 어떻게 바꾸면 되는지<br />
             — 직접 클릭하고 입력하면서 익힐 수 있습니다.
@@ -411,7 +405,7 @@ export function LandingPage() {
             <Link
               key={step.step}
               to={step.link}
-              className={`group rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200 ${isDark ? step.colorDark : step.colorLight} ${index === usageSteps.length - 1 ? 'sm:col-span-2 lg:col-span-1 lg:col-start-1' : ''}`}
+              className={`group rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200 ${step.color[isDark ? 'dark' : 'light']} ${index === usageSteps.length - 1 ? 'sm:col-span-2' : ''}`}
             >
               <div className="flex items-start gap-4">
                 <span className={`shrink-0 text-2xl font-black tabular-nums ${t.subtitle}`}>{step.step}</span>
@@ -421,7 +415,7 @@ export function LandingPage() {
                   <p className={`text-xs leading-relaxed ${t.cardSimple}`}>{step.when}</p>
                   <p className={`text-[10px] font-semibold uppercase tracking-wider mt-2 ${t.label}`}>이렇게</p>
                   <p className={`text-xs leading-relaxed ${t.cardDesc}`}>{step.how}</p>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium mt-1 ${isDark ? step.badgeDark : step.badgeLight}`}>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium mt-1 ${step.badge[isDark ? 'dark' : 'light']}`}>
                     {step.label} →
                   </span>
                 </div>
