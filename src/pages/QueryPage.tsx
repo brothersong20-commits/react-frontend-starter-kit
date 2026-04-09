@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useUsers, usePosts, useCreatePost } from '@/api/queries'
-import { Loader2, AlertCircle, Info, Lightbulb, Rocket, RefreshCw, CheckCircle } from 'lucide-react'
+import { Loader2, AlertCircle, Info, Lightbulb, Rocket, RefreshCw, CheckCircle, Sparkles } from 'lucide-react'
 
 export function QueryPage() {
   const { data: users, isLoading, isError, error, isFetching, refetch } = useUsers()
@@ -242,6 +242,113 @@ const { data, isLoading, isError, refetch } = useQuery({
 
 mutate({ title: '새 포스트', body: '내용...' })`}</code>
           </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 4: staleTime / gcTime / refetchInterval */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 4 — 캐시 유효 시간 설정 (staleTime / gcTime)</CardTitle>
+          <CardDescription>
+            자주 바뀌는 데이터와 거의 안 바뀌는 데이터를 다르게 설정해서 불필요한 API
+            호출을 줄입니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`// 자주 바뀌는 데이터: 실시간 주문 상태
+const { data: orders } = useQuery({
+  queryKey: ['orders'],
+  queryFn: fetchOrders,
+  staleTime: 0,           // 항상 최신 데이터 요청
+  refetchInterval: 5000,  // 5초마다 자동 갱신
+})
+
+// 거의 안 바뀌는 데이터: 상품 카테고리 목록
+const { data: categories } = useQuery({
+  queryKey: ['categories'],
+  queryFn: fetchCategories,
+  staleTime: 1000 * 60 * 60,       // 1시간 동안 캐시 사용
+  gcTime: 1000 * 60 * 60 * 24,     // 24시간 후 메모리에서 제거
+})`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 5: enabled 옵션으로 조건부 쿼리 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 5 — 조건부 쿼리 실행 (enabled 옵션)</CardTitle>
+          <CardDescription>
+            입력값에 따라 쿼리를 조건부로 실행합니다. 검색창, 자동완성 구현에
+            사용합니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`const [searchTerm, setSearchTerm] = useState('')
+
+const { data: results, isLoading } = useQuery({
+  // searchTerm이 바뀔 때마다 자동으로 새 요청
+  queryKey: ['search', searchTerm],
+  queryFn: () => searchProducts(searchTerm),
+
+  // 2글자 이상 입력 시에만 실행 — 빈 검색 방지
+  enabled: searchTerm.length >= 2,
+
+  staleTime: 30_000,
+})
+
+// 사용 예시: 검색창에 입력할 때마다 자동 실행
+<input
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  placeholder="2글자 이상 입력하면 검색..."
+/>`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 바이브 코더 Tip */}
+      <Card className="border-amber-500/20 bg-amber-500/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-1.5">
+            <Sparkles className="size-4 text-amber-500" />
+            바이브 코더를 위한 Tip
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3">
+          <p>
+            <strong className="text-foreground">AI 프롬프트 예시:</strong>
+          </p>
+          <div className="rounded-md bg-muted p-3 text-xs leading-relaxed">
+            "JSONPlaceholder의 /users 엔드포인트에서 사용자 목록을 불러오는 useUsers 훅을
+            TanStack Query로 만들어줘. 로딩 중엔 스피너, 에러 나면 에러 메시지, 성공하면 목록을
+            보여주는 컴포넌트도 같이 만들어줘."
+          </div>
+          <ul className="space-y-1.5">
+            <li>
+              •{' '}
+              <strong className="text-foreground">queryKey는 배열</strong>로 씁니다:{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">['users']</code>,{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">['posts', userId]</code> —
+              같은 키면 캐시를 공유해요
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">데이터 수정 후 목록 갱신</strong>이 필요하면
+              useMutation의 onSuccess에{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                invalidateQueries({'{ queryKey: [\'posts\'] }'})
+              </code>
+              를 넣으세요 (예시 3 참고)
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">useQuery vs useMutation</strong>: 읽기(GET)는
+              useQuery, 쓰기(POST·PUT·DELETE)는 useMutation
+            </li>
+          </ul>
         </CardContent>
       </Card>
 

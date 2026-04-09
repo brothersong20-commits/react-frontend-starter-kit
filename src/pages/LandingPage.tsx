@@ -121,6 +121,70 @@ const stack = [
   },
 ]
 
+// 이럴 때 이렇게 활용하세요 — 단계별 가이드 데이터
+const usageSteps = [
+  {
+    step: '01',
+    title: '여러 페이지에서 같은 데이터를 써야 할 때',
+    when: '로그인 사용자 이름을 헤더, 마이페이지, 댓글에 모두 보여줘야 해요',
+    how: 'Zustand 스토어를 만들면 props 없이 어디서든 꺼내 쓸 수 있습니다',
+    link: '/zustand',
+    label: 'Zustand 예시 보기',
+    colorDark: 'border-orange-500/20 bg-orange-500/5',
+    colorLight: 'border-orange-200 bg-orange-50',
+    badgeDark: 'bg-orange-500/20 text-orange-300',
+    badgeLight: 'bg-orange-100 text-orange-700',
+  },
+  {
+    step: '02',
+    title: 'API에서 데이터를 가져와야 할 때',
+    when: '서버에서 상품 목록, 유저 정보를 불러오고 로딩·에러도 처리하고 싶어요',
+    how: 'TanStack Query의 useQuery로 API 연동 + 캐싱을 자동화하세요',
+    link: '/query',
+    label: 'TanStack Query 예시 보기',
+    colorDark: 'border-rose-500/20 bg-rose-500/5',
+    colorLight: 'border-rose-200 bg-rose-50',
+    badgeDark: 'bg-rose-500/20 text-rose-300',
+    badgeLight: 'bg-rose-100 text-rose-700',
+  },
+  {
+    step: '03',
+    title: '입력 폼을 만들어야 할 때',
+    when: '회원가입, 상품 등록 폼을 만드는데 유효성 검사도 넣고 싶어요',
+    how: 'React Hook Form + Zod로 폼 상태와 검증 규칙을 동시에 선언하세요',
+    link: '/form',
+    label: 'Form 예시 보기',
+    colorDark: 'border-pink-500/20 bg-pink-500/5',
+    colorLight: 'border-pink-200 bg-pink-50',
+    badgeDark: 'bg-pink-500/20 text-pink-300',
+    badgeLight: 'bg-pink-100 text-pink-700',
+  },
+  {
+    step: '04',
+    title: '프로세스 흐름을 시각화해야 할 때',
+    when: '업무 흐름, AI 파이프라인, 조직도를 다이어그램으로 보여주고 싶어요',
+    how: '@xyflow/react로 드래그 가능한 노드-엣지 다이어그램을 만드세요',
+    link: '/flow',
+    label: 'Flow 예시 보기',
+    colorDark: 'border-emerald-500/20 bg-emerald-500/5',
+    colorLight: 'border-emerald-200 bg-emerald-50',
+    badgeDark: 'bg-emerald-500/20 text-emerald-300',
+    badgeLight: 'bg-emerald-100 text-emerald-700',
+  },
+  {
+    step: '05',
+    title: 'UI 컴포넌트가 필요할 때',
+    when: '버튼, 카드, 입력창, 모달 같은 완성된 UI 부품이 필요해요',
+    how: 'shadcn/ui 컴포넌트를 명령어 한 줄로 추가하고 바로 커스터마이징하세요',
+    link: '/components',
+    label: 'Components 예시 보기',
+    colorDark: 'border-zinc-500/20 bg-zinc-500/5',
+    colorLight: 'border-zinc-200 bg-zinc-50',
+    badgeDark: 'bg-zinc-500/20 text-zinc-300',
+    badgeLight: 'bg-zinc-100 text-zinc-600',
+  },
+]
+
 // ── Theme token maps ─────────────────────────────────────────────────────────
 const T = {
   dark: {
@@ -234,11 +298,23 @@ export function LandingPage() {
         </h1>
 
         {/* Subtitle */}
-        <p className={`mb-10 max-w-sm text-base leading-relaxed ${t.subtitle}`}>
+        <p className={`mb-8 max-w-sm text-base leading-relaxed ${t.subtitle}`}>
           최신 React 생태계를 한 곳에서 탐색하세요.
           <br />
           각 라이브러리의 실제 동작을 직접 확인해보세요.
         </p>
+
+        {/* 타겟 카피라이팅 */}
+        <div className="mb-10 max-w-lg text-center space-y-3">
+          <p className={`text-lg font-semibold leading-snug ${isDark ? 'text-violet-300' : 'text-violet-600'}`}>
+            "AI한테 코드 짜달라고 했는데<br />왜 동작을 안 하는지 모르겠다면"
+          </p>
+          <p className={`text-sm leading-relaxed ${isDark ? 'text-white/40' : 'text-gray-500'}`}>
+            Claude, ChatGPT와 함께 바이브 코딩하는 입문자를 위해 만들었습니다.<br />
+            각 라이브러리가 실제로 어떻게 동작하는지, 어디를 어떻게 바꾸면 되는지<br />
+            — 직접 클릭하고 입력하면서 익힐 수 있습니다.
+          </p>
+        </div>
 
         {/* CTA */}
         <div className="flex flex-wrap items-center justify-center gap-3">
@@ -315,6 +391,43 @@ export function LandingPage() {
               </a>
             )
           })}
+        </div>
+      </section>
+
+      {/* ── 이럴 때 이렇게 활용하세요 ── */}
+      <section className="relative mx-auto max-w-6xl px-6 pb-32">
+        <p className={`mb-3 text-center text-xs font-semibold uppercase tracking-[0.2em] ${t.label}`}>
+          사용 가이드
+        </p>
+        <h2 className={`mb-2 text-center text-2xl font-bold ${t.cardName}`}>
+          이럴 때 이렇게 활용하세요
+        </h2>
+        <p className={`mb-10 text-center text-sm ${t.subtitle}`}>
+          AI에게 아래 상황을 설명하고, 각 예시 페이지를 참고로 붙여넣으세요
+        </p>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {usageSteps.map((step, index) => (
+            <Link
+              key={step.step}
+              to={step.link}
+              className={`group rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200 ${isDark ? step.colorDark : step.colorLight} ${index === usageSteps.length - 1 ? 'sm:col-span-2 lg:col-span-1 lg:col-start-1' : ''}`}
+            >
+              <div className="flex items-start gap-4">
+                <span className={`shrink-0 text-2xl font-black tabular-nums ${t.subtitle}`}>{step.step}</span>
+                <div className="space-y-1.5 min-w-0">
+                  <p className={`text-[10px] font-semibold uppercase tracking-wider ${t.label}`}>이럴 때</p>
+                  <p className={`text-sm font-semibold leading-snug ${t.cardName}`}>{step.title}</p>
+                  <p className={`text-xs leading-relaxed ${t.cardSimple}`}>{step.when}</p>
+                  <p className={`text-[10px] font-semibold uppercase tracking-wider mt-2 ${t.label}`}>이렇게</p>
+                  <p className={`text-xs leading-relaxed ${t.cardDesc}`}>{step.how}</p>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium mt-1 ${isDark ? step.badgeDark : step.badgeLight}`}>
+                    {step.label} →
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 

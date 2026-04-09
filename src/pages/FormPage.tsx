@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { CheckCircle, Info, Lightbulb, Rocket } from 'lucide-react'
+import { CheckCircle, Info, Lightbulb, Rocket, Sparkles } from 'lucide-react'
 
 // ─── 예시 1: 회원가입 폼 스키마 ──────────────────────────────
 const signupSchema = z.object({
@@ -396,6 +396,125 @@ useEffect(() => {
   if (user) reset({ name: user.name, email: user.email })
 }, [user, reset])`}</code>
           </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 4: 체크박스 & enum 선택 필드 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 4 — 체크박스 &amp; 선택(enum) 필드</CardTitle>
+          <CardDescription>
+            약관 동의, 역할 선택 등 boolean / enum 타입의 필드를 다루는 패턴입니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`const settingsSchema = z.object({
+  role: z.enum(['admin', 'editor', 'viewer'], {
+    errorMap: () => ({ message: '역할을 선택해주세요' }),
+  }),
+  agreeToTerms: z.boolean().refine((v) => v === true, {
+    message: '약관에 동의해야 합니다',
+  }),
+  newsletter: z.boolean().optional(),
+})
+
+// JSX에서 사용
+<select {...register('role')}>
+  <option value="">역할 선택</option>
+  <option value="admin">관리자</option>
+  <option value="editor">편집자</option>
+  <option value="viewer">뷰어</option>
+</select>
+{errors.role && <p className="text-destructive text-xs">{errors.role.message}</p>}
+
+<input type="checkbox" {...register('agreeToTerms')} />
+<label>이용약관에 동의합니다</label>
+{errors.agreeToTerms && <p className="text-destructive text-xs">{errors.agreeToTerms.message}</p>}`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 5: 다단계 폼 패턴 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 5 — 다단계 폼 (Multi-step Form)</CardTitle>
+          <CardDescription>
+            단계마다 다른 스키마를 적용하고, 마지막 단계에서 통합 제출하는 패턴입니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`// 각 단계별 스키마 분리
+const step1Schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+})
+const step2Schema = z.object({
+  phone: z.string().min(10, '전화번호를 입력해주세요'),
+  address: z.string().min(5, '주소를 입력해주세요'),
+})
+
+// 단계 상태 관리
+const [currentStep, setCurrentStep] = useState(1)
+const [formData, setFormData] = useState({})
+
+// 각 단계 완료 시 데이터 누적 + 다음 단계 이동
+function onStep1Submit(data) {
+  setFormData((prev) => ({ ...prev, ...data }))
+  setCurrentStep(2)
+}
+
+// 마지막 단계에서 통합 제출
+function onStep2Submit(data) {
+  const fullData = { ...formData, ...data }
+  // fullData를 API로 전송
+  submitToAPI(fullData)
+}`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 바이브 코더 Tip */}
+      <Card className="border-amber-500/20 bg-amber-500/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-1.5">
+            <Sparkles className="size-4 text-amber-500" />
+            바이브 코더를 위한 Tip
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3">
+          <p>
+            <strong className="text-foreground">AI 프롬프트 예시:</strong>
+          </p>
+          <div className="rounded-md bg-muted p-3 text-xs leading-relaxed">
+            "이름(2자 이상), 이메일(형식 검증), 비밀번호(8자 이상, 대문자 포함, 숫자 포함) 필드가
+            있는 회원가입 폼을 React Hook Form + Zod로 만들어줘. 각 필드 아래에 에러 메시지가
+            빨간색으로 나타나게 해줘. shadcn/ui의 Input, Label, Button을 써줘."
+          </div>
+          <ul className="space-y-1.5">
+            <li>
+              •{' '}
+              <strong className="text-foreground">에러 메시지는 Zod schema에</strong> 직접 씁니다:{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                z.string().min(2, '2자 이상 입력하세요')
+              </code>
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">기존 데이터 수정 폼</strong>:{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">defaultValues</code>에 API
+              응답을 넣으면 폼이 미리 채워집니다 (예시 3 참고)
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">제출 버튼 중복 클릭 방지</strong>:{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                disabled={'{isSubmitting}'}
+              </code>
+              으로 자동 처리됩니다
+            </li>
+          </ul>
         </CardContent>
       </Card>
 

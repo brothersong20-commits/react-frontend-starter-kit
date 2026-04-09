@@ -12,7 +12,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Info, Lightbulb, Rocket } from 'lucide-react'
+import { Info, Lightbulb, Rocket, Sparkles } from 'lucide-react'
 
 // ─── 예시 1: 주문 처리 플로우 ───────────────────────────────────
 const orderNodes = [
@@ -244,6 +244,141 @@ const edges = [
   },
 ]`}</code>
           </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 4: 커스텀 노드 컴포넌트 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 4 — 커스텀 노드 컴포넌트</CardTitle>
+          <CardDescription>
+            기본 사각형 노드 대신 React 컴포넌트로 만든 커스텀 노드를 사용하면 아이콘,
+            상태 표시, 버튼 등을 자유롭게 넣을 수 있습니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`import { Handle, Position } from '@xyflow/react'
+
+// 상태(running/done/error)를 색상으로 표시하는 커스텀 노드
+function StatusNode({ data }: { data: { label: string; status: 'running' | 'done' | 'error' } }) {
+  const colorMap = {
+    running: 'bg-amber-400',
+    done: 'bg-emerald-400',
+    error: 'bg-red-400',
+  }
+
+  return (
+    <div className="rounded-lg border bg-white p-3 shadow-md min-w-32">
+      <Handle type="target" position={Position.Left} />
+      <div className="flex items-center gap-2">
+        <span className={\`h-2 w-2 rounded-full \${colorMap[data.status]}\`} />
+        <span className="text-sm font-medium">{data.label}</span>
+      </div>
+      <Handle type="source" position={Position.Right} />
+    </div>
+  )
+}
+
+// ReactFlow에 nodeTypes로 등록
+const nodeTypes = { status: StatusNode }
+
+const nodes = [
+  { id: '1', type: 'status', position: { x: 0, y: 0 },
+    data: { label: '데이터 수집', status: 'done' } },
+  { id: '2', type: 'status', position: { x: 200, y: 0 },
+    data: { label: '모델 학습', status: 'running' } },
+]
+
+<ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} />`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 예시 5: API 데이터로 동적 다이어그램 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 5 — API 데이터 → 동적 다이어그램</CardTitle>
+          <CardDescription>
+            서버에서 받은 데이터를 nodes/edges 배열로 변환해서 실시간 다이어그램을 만드는
+            패턴입니다. TanStack Query와 함께 사용합니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-x-auto leading-relaxed">
+            <code>{`// API 응답 타입
+interface Task {
+  id: string
+  name: string
+  dependsOn: string[] // 선행 작업 ID 목록
+}
+
+// API 데이터를 ReactFlow 형식으로 변환
+function tasksToFlow(tasks: Task[]) {
+  const nodes = tasks.map((task, index) => ({
+    id: task.id,
+    position: { x: (index % 3) * 220, y: Math.floor(index / 3) * 120 },
+    data: { label: task.name },
+  }))
+
+  const edges = tasks.flatMap((task) =>
+    task.dependsOn.map((dep) => ({
+      id: \`\${dep}-\${task.id}\`,
+      source: dep,
+      target: task.id,
+      animated: true,
+    }))
+  )
+
+  return { nodes, edges }
+}
+
+// TanStack Query와 함께 사용
+const { data: tasks } = useQuery({ queryKey: ['tasks'], queryFn: fetchTasks })
+const { nodes, edges } = tasks ? tasksToFlow(tasks) : { nodes: [], edges: [] }`}</code>
+          </pre>
+        </CardContent>
+      </Card>
+
+      {/* 바이브 코더 Tip */}
+      <Card className="border-amber-500/20 bg-amber-500/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-1.5">
+            <Sparkles className="size-4 text-amber-500" />
+            바이브 코더를 위한 Tip
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3">
+          <p>
+            <strong className="text-foreground">AI 프롬프트 예시:</strong>
+          </p>
+          <div className="rounded-md bg-muted p-3 text-xs leading-relaxed">
+            "xyflow/react로 업무 승인 프로세스를 시각화하고 싶어. 노드는 '요청 제출', '팀장 검토',
+            '인사팀 검토', '최종 승인' 4단계고, 각 노드를 파란색/노란색/초록색으로 구분해줘. 노드를
+            드래그해서 위치를 바꿀 수 있어야 해."
+          </div>
+          <ul className="space-y-1.5">
+            <li>
+              •{' '}
+              <strong className="text-foreground">부모 div에 반드시 고정 높이</strong>를 줘야
+              합니다:{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                {'<div style={{ height: 400 }}>'}
+              </code>
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">노드 색상 커스터마이징</strong>: 노드 객체의{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">style</code> 속성에 인라인
+              스타일을 넣으세요 (예시 1, 2 참고)
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">API 데이터 연동</strong>: TanStack Query +
+              ReactFlow를 함께 쓰면 서버 데이터로 실시간 다이어그램을 만들 수 있습니다 (예시 5
+              참고)
+            </li>
+          </ul>
         </CardContent>
       </Card>
 

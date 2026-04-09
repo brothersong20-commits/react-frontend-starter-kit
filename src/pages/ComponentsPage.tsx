@@ -20,6 +20,8 @@ import {
   User,
   Mail,
   ArrowUpRight,
+  Inbox,
+  Sparkles,
 } from 'lucide-react'
 
 export function ComponentsPage() {
@@ -341,6 +343,89 @@ export function ComponentsPage() {
 
           <Separator />
 
+          {/* 로딩 스켈레톤 패턴 */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              로딩 스켈레톤 (animate-pulse)
+            </p>
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 rounded-lg border p-3 animate-pulse"
+                >
+                  <div className="size-8 rounded-full bg-muted shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 rounded bg-muted w-1/3" />
+                    <div className="h-2.5 rounded bg-muted w-1/2" />
+                  </div>
+                  <div className="h-5 w-12 rounded-full bg-muted" />
+                </div>
+              ))}
+            </div>
+            <pre className="rounded-md bg-muted p-3 text-xs overflow-x-auto leading-relaxed mt-2">
+              <code>{`// 데이터 로딩 중엔 스켈레톤, 완료되면 실제 컨텐츠 표시
+{isLoading ? (
+  <div className="space-y-2">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="flex gap-3 rounded-lg border p-3 animate-pulse">
+        <div className="size-8 rounded-full bg-muted" />
+        <div className="flex-1 space-y-1.5">
+          <div className="h-3 rounded bg-muted w-1/3" />
+          <div className="h-2.5 rounded bg-muted w-1/2" />
+        </div>
+      </div>
+    ))}
+  </div>
+) : (
+  <UserList users={users} />
+)}`}</code>
+            </pre>
+          </div>
+
+          <Separator />
+
+          {/* 빈 상태(Empty State) 패턴 */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              빈 상태 (Empty State)
+            </p>
+            <div className="rounded-lg border border-dashed p-8 flex flex-col items-center gap-3 text-center">
+              <div className="size-10 rounded-full bg-muted flex items-center justify-center">
+                <Inbox className="size-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">아직 항목이 없습니다</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  첫 번째 항목을 추가해보세요
+                </p>
+              </div>
+              <Button size="sm" variant="outline">
+                <Plus className="size-3 mr-1" />
+                항목 추가
+              </Button>
+            </div>
+            <pre className="rounded-md bg-muted p-3 text-xs overflow-x-auto leading-relaxed">
+              <code>{`// 데이터가 없을 때 빈 상태 UI 표시
+{items.length === 0 ? (
+  <div className="rounded-lg border border-dashed p-8 flex flex-col items-center gap-3">
+    <div className="size-10 rounded-full bg-muted flex items-center justify-center">
+      <Inbox className="size-5 text-muted-foreground" />
+    </div>
+    <div className="text-center">
+      <p className="text-sm font-medium">아직 항목이 없습니다</p>
+      <p className="text-xs text-muted-foreground">첫 번째 항목을 추가해보세요</p>
+    </div>
+    <Button size="sm" variant="outline">항목 추가</Button>
+  </div>
+) : (
+  <ItemList items={items} />
+)}`}</code>
+            </pre>
+          </div>
+
+          <Separator />
+
           {/* 사용자 프로필 카드 패턴 */}
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">사용자 목록 아이템 (Card + Badge + Button)</p>
@@ -387,6 +472,53 @@ export function ComponentsPage() {
             </div>
           </div>
 
+        </CardContent>
+      </Card>
+
+      {/* 바이브 코더 Tip */}
+      <Card className="border-amber-500/20 bg-amber-500/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-1.5">
+            <Sparkles className="size-4 text-amber-500" />
+            바이브 코더를 위한 Tip
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-3">
+          <p>
+            <strong className="text-foreground">AI 프롬프트 예시:</strong>
+          </p>
+          <div className="rounded-md bg-muted p-3 text-xs leading-relaxed">
+            "shadcn/ui의 Card, Button, Badge를 써서 사용자 목록 페이지를 만들어줘. 각 카드에는
+            아바타, 이름, 이메일, 역할 뱃지, 상세보기 버튼이 있어야 해. 데이터 로딩 중에는
+            스켈레톤, 데이터가 없으면 빈 상태 메시지를 보여줘."
+          </div>
+          <ul className="space-y-1.5">
+            <li>
+              •{' '}
+              <strong className="text-foreground">새 컴포넌트 추가</strong>:{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                npx shadcn@latest add dialog
+              </code>{' '}
+              — Dialog, Select, Table 등 40개 이상
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">컴포넌트 커스터마이징</strong>:{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                src/components/ui/button.tsx
+              </code>
+              를 직접 수정하면 됩니다. 라이브러리가 아니라 내 코드이기 때문입니다
+            </li>
+            <li>
+              •{' '}
+              <strong className="text-foreground">아이콘 찾기</strong>: lucide.dev에서 원하는 아이콘
+              이름을 찾아{' '}
+              <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                {"import { IconName } from 'lucide-react'"}
+              </code>
+              로 사용하세요
+            </li>
+          </ul>
         </CardContent>
       </Card>
 

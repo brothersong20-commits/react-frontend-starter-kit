@@ -189,6 +189,45 @@ macOS에서 정상 동작하던 앱이 Windows에서 빈 화면이 되는 문제
 
 ---
 
+## PHASE 4 — 바이브 코더 Tip 및 히어로 섹션 강화
+
+**날짜:** 2026-04-09  
+**상태:** 완료
+
+### 목표
+
+AI와 함께 코딩하는 왕왕초보 바이브 코더를 위한 콘텐츠를 대폭 강화한다.
+LandingPage에 타겟 카피라이팅과 단계별 사용 가이드를 추가하고, 각 기술 페이지에
+실전 예시 2개 + "바이브 코더 Tip" 카드를 추가한다.
+
+### 커밋
+
+| 해시 | 메시지 |
+|---|---|
+| *(이번 커밋)* | PHASE 4: feat: 바이브 코더 Tip 카드 및 히어로 섹션 강화 |
+
+### 작업 내용
+
+- **LandingPage — 히어로 카피라이팅 추가**
+  - `"AI한테 코드 짜달라고 했는데 왜 동작을 안 하는지 모르겠다면"` 강조 문구
+  - Claude, ChatGPT 바이브 코더 타겟 설명 문구
+  - 다크/라이트 모드 대응 (violet-300 / violet-600)
+- **LandingPage — "이럴 때 이렇게 활용하세요" 섹션 추가**
+  - 5개 Step 카드: Zustand/Query/Form/Flow/Components 각각
+  - "이럴 때(when)" + "이렇게(how)" + 해당 페이지 링크 구조
+  - 기술별 고유 색상 테두리 (orange/rose/pink/emerald/zinc)
+- **각 기술 페이지 — 예시 2개 추가**
+  - Zustand: 알림 Toast 스토어, AI 채팅 히스토리 스토어
+  - TanStack Query: staleTime/gcTime/refetchInterval 설정, enabled 조건부 쿼리
+  - React Hook Form: 체크박스 & enum 선택 필드, 다단계 폼(Multi-step)
+  - @xyflow/react: 커스텀 노드 컴포넌트(Handle/Position), API 데이터 → 동적 다이어그램
+  - Components: 로딩 스켈레톤 패턴(animate-pulse), 빈 상태(Empty State) 패턴
+- **각 기술 페이지 — "바이브 코더 Tip" 카드 추가 (amber 색상)**
+  - AI 프롬프트 예시 (실제로 붙여넣어 쓸 수 있는 형태)
+  - 3가지 실용 팁 bullet
+
+---
+
 ## 버전 히스토리 요약
 
 | 버전 | PHASE | 날짜 | 주요 내용 |
@@ -198,3 +237,4 @@ macOS에서 정상 동작하던 앱이 Windows에서 빈 화면이 되는 문제
 | v0.1.0 | PHASE 2 | 2026-04-08 | 왕초보 친화적 설명 카드 3종 추가 |
 | v0.1.0 | PHASE 2.3 | 2026-04-09 | Windows 안정성 개선, 코드 스플리팅 |
 | v0.1.0 | PHASE 3 | 2026-04-08 | 각 예시 페이지 실전 패턴 추가 |
+| v0.1.0 | PHASE 4 | 2026-04-09 | 바이브 코더 Tip 카드 + 히어로 섹션 강화 |
