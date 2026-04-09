@@ -102,12 +102,89 @@ const agentEdges = [
   { id: 'ae4-5', source: 'a4', target: 'a5', animated: true },
 ]
 
+// ─── 예시 3: 플랜트 건설 설계 검토 절차 (EPC) ────────────────────
+const plantNodes = [
+  {
+    id: 'p1',
+    position: { x: 40, y: 200 },
+    data: { label: '설계 착수' },
+    type: 'input',
+    style: { background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: 8 },
+  },
+  {
+    id: 'p2',
+    position: { x: 210, y: 200 },
+    data: { label: '기본 설계 (Basic Engineering)' },
+    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
+  },
+  {
+    id: 'p3',
+    position: { x: 400, y: 60 },
+    data: { label: '공정 설계 (P&ID)' },
+    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
+  },
+  {
+    id: 'p4',
+    position: { x: 400, y: 160 },
+    data: { label: '배관/기계 설계 (3D 모델링)' },
+    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
+  },
+  {
+    id: 'p5',
+    position: { x: 400, y: 260 },
+    data: { label: '구조/토목 설계' },
+    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
+  },
+  {
+    id: 'p6',
+    position: { x: 400, y: 360 },
+    data: { label: '전기/계장 설계' },
+    style: { background: '#fce7f3', border: '1px solid #f9a8d4', borderRadius: 8 },
+  },
+  {
+    id: 'p7',
+    position: { x: 590, y: 200 },
+    data: { label: 'HAZOP 안전성 검토' },
+    style: { background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8 },
+  },
+  {
+    id: 'p8',
+    position: { x: 740, y: 200 },
+    data: { label: '발주처(Client) 검토' },
+    style: { background: '#fef9c3', border: '1px solid #fde047', borderRadius: 8 },
+  },
+  {
+    id: 'p9',
+    position: { x: 890, y: 200 },
+    data: { label: 'IFC 설계 확정' },
+    type: 'output',
+    style: { background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8 },
+  },
+]
+
+const plantEdges = [
+  { id: 'pe1-2', source: 'p1', target: 'p2', animated: true, label: '착수 승인' },
+  { id: 'pe2-3', source: 'p2', target: 'p3', animated: true, label: 'P&ID 착수' },
+  { id: 'pe2-4', source: 'p2', target: 'p4', animated: true, label: '3D 모델 착수' },
+  { id: 'pe2-5', source: 'p2', target: 'p5', animated: true, label: '구조 착수' },
+  { id: 'pe2-6', source: 'p2', target: 'p6', animated: true, label: '계장 착수' },
+  { id: 'pe3-7', source: 'p3', target: 'p7', label: 'P&ID 확정' },
+  { id: 'pe4-7', source: 'p4', target: 'p7', label: '모델 확정' },
+  { id: 'pe5-7', source: 'p5', target: 'p7', label: '구조 확정' },
+  { id: 'pe6-7', source: 'p6', target: 'p7', label: '계장 확정' },
+  { id: 'pe7-8', source: 'p7', target: 'p8', animated: true, label: 'HAZOP 통과' },
+  { id: 'pe8-9', source: 'p8', target: 'p9', animated: true, label: 'Client 승인' },
+]
+
 export function FlowPage() {
   const [orderNodesState, , onOrderNodesChange] = useNodesState(orderNodes)
   const [orderEdgesState, setOrderEdges, onOrderEdgesChange] = useEdgesState(orderEdges)
 
   const [agentNodesState, , onAgentNodesChange] = useNodesState(agentNodes)
   const [agentEdgesState, setAgentEdges, onAgentEdgesChange] = useEdgesState(agentEdges)
+
+  const [plantNodesState, , onPlantNodesChange] = useNodesState(plantNodes)
+  const [plantEdgesState, setPlantEdges, onPlantEdgesChange] = useEdgesState(plantEdges)
 
   const onOrderConnect = useCallback(
     (connection: Connection) => setOrderEdges((eds) => addEdge(connection, eds)),
@@ -117,6 +194,11 @@ export function FlowPage() {
   const onAgentConnect = useCallback(
     (connection: Connection) => setAgentEdges((eds) => addEdge(connection, eds)),
     [setAgentEdges]
+  )
+
+  const onPlantConnect = useCallback(
+    (connection: Connection) => setPlantEdges((eds) => addEdge(connection, eds)),
+    [setPlantEdges]
   )
 
   return (
@@ -207,10 +289,39 @@ export function FlowPage() {
         </CardContent>
       </Card>
 
-      {/* 예시 3: 노드 데이터 구조 */}
+      {/* 예시 3: 플랜트 건설 설계 검토 절차 */}
       <Card>
         <CardHeader>
-          <CardTitle>예시 3 — 노드/엣지 데이터 구조</CardTitle>
+          <CardTitle>예시 3 — 플랜트 건설 설계 검토 절차 (EPC)</CardTitle>
+          <CardDescription>
+            기본 설계 완료 후 공정(P&ID)·배관·구조·전기/계장 4개 분야가 병렬로 상세 설계를
+            진행하고, HAZOP 안전성 검토 → 발주처(Client) 승인 → IFC(Issued for Construction)
+            확정으로 이어지는 실제 EPC 플랜트 건설 프로젝트의 설계 검토 플로우입니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div style={{ height: 420 }} className="rounded-b-lg overflow-hidden">
+            <ReactFlow
+              nodes={plantNodesState}
+              edges={plantEdgesState}
+              onNodesChange={onPlantNodesChange}
+              onEdgesChange={onPlantEdgesChange}
+              onConnect={onPlantConnect}
+              fitView
+              fitViewOptions={{ padding: 0.15 }}
+            >
+              <Controls />
+              <MiniMap />
+              <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+            </ReactFlow>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 예시 4: 노드 데이터 구조 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>예시 4 — 노드/엣지 데이터 구조</CardTitle>
           <CardDescription>
             API 응답 데이터를 그대로 nodes/edges 배열로 변환해서 동적 다이어그램을 생성할 수
             있습니다.
@@ -247,10 +358,10 @@ const edges = [
         </CardContent>
       </Card>
 
-      {/* 예시 4: 커스텀 노드 컴포넌트 */}
+      {/* 예시 5: 커스텀 노드 컴포넌트 */}
       <Card>
         <CardHeader>
-          <CardTitle>예시 4 — 커스텀 노드 컴포넌트</CardTitle>
+          <CardTitle>예시 5 — 커스텀 노드 컴포넌트</CardTitle>
           <CardDescription>
             기본 사각형 노드 대신 React 컴포넌트로 만든 커스텀 노드를 사용하면 아이콘,
             상태 표시, 버튼 등을 자유롭게 넣을 수 있습니다.
@@ -295,10 +406,10 @@ const nodes = [
         </CardContent>
       </Card>
 
-      {/* 예시 5: API 데이터로 동적 다이어그램 */}
+      {/* 예시 6: API 데이터로 동적 다이어그램 */}
       <Card>
         <CardHeader>
-          <CardTitle>예시 5 — API 데이터 → 동적 다이어그램</CardTitle>
+          <CardTitle>예시 6 — API 데이터 → 동적 다이어그램</CardTitle>
           <CardDescription>
             서버에서 받은 데이터를 nodes/edges 배열로 변환해서 실시간 다이어그램을 만드는
             패턴입니다. TanStack Query와 함께 사용합니다.
@@ -375,7 +486,7 @@ const { nodes, edges } = tasks ? tasksToFlow(tasks) : { nodes: [], edges: [] }`}
             <li>
               •{' '}
               <strong className="text-foreground">API 데이터 연동</strong>: TanStack Query +
-              ReactFlow를 함께 쓰면 서버 데이터로 실시간 다이어그램을 만들 수 있습니다 (예시 5
+              ReactFlow를 함께 쓰면 서버 데이터로 실시간 다이어그램을 만들 수 있습니다 (예시 6
               참고)
             </li>
           </ul>
