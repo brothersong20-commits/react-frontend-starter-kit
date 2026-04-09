@@ -13,7 +13,7 @@ const navLinks = [
 const stack = [
   {
     name: 'React',
-    version: '19',
+    version: '19.2.5',
     description: '동시성 렌더링, Server Components 지원',
     simple: '화면을 부품처럼 나눠서 만드는 UI 라이브러리예요. 버튼 하나, 카드 하나가 모두 독립적인 컴포넌트입니다.',
     badge: { dark: 'bg-sky-500/20 text-sky-300 border border-sky-500/30', light: 'bg-sky-100 text-sky-700 border border-sky-200' },
@@ -22,7 +22,7 @@ const stack = [
   },
   {
     name: 'Vite',
-    version: '8',
+    version: '8.0.8',
     description: 'HMR, ESM 네이티브, 번들 최적화',
     simple: '코드를 저장하면 브라우저에 즉시 반영되는 초고속 개발 환경이에요. 기다림 없이 바로 결과를 확인할 수 있어요.',
     badge: { dark: 'bg-violet-500/20 text-violet-300 border border-violet-500/30', light: 'bg-violet-100 text-violet-700 border border-violet-200' },
@@ -31,7 +31,7 @@ const stack = [
   },
   {
     name: 'TypeScript',
-    version: '6',
+    version: '6.0.2',
     description: 'Go 기반 컴파일러, strict 기본값',
     simple: '오타나 잘못된 타입을 코드 작성 시점에 잡아주는 JavaScript 확장판이에요. 실수를 미리 예방해줘요.',
     badge: { dark: 'bg-blue-500/20 text-blue-300 border border-blue-500/30', light: 'bg-blue-100 text-blue-700 border border-blue-200' },
@@ -40,7 +40,7 @@ const stack = [
   },
   {
     name: 'Tailwind CSS',
-    version: '4',
+    version: '4.2.2',
     description: 'CSS-first 설정, @import 방식',
     simple: 'class 이름만으로 스타일을 입히는 CSS 도구예요. 별도 CSS 파일 없이 HTML에서 바로 디자인할 수 있어요.',
     badge: { dark: 'bg-teal-500/20 text-teal-300 border border-teal-500/30', light: 'bg-teal-100 text-teal-700 border border-teal-200' },
@@ -58,7 +58,7 @@ const stack = [
   },
   {
     name: 'React Router',
-    version: '7',
+    version: '7.14.0',
     description: 'URL 기반 클라이언트 라우팅',
     simple: 'URL 주소에 따라 다른 화면을 보여주는 페이지 이동 관리자예요. /home, /about 같은 경로 처리를 담당해요.',
     badge: { dark: 'bg-red-500/20 text-red-300 border border-red-500/30', light: 'bg-red-100 text-red-700 border border-red-200' },
@@ -67,7 +67,7 @@ const stack = [
   },
   {
     name: 'Zustand',
-    version: '5',
+    version: '5.0.12',
     description: '가볍고 간결한 클라이언트 상태 관리',
     simple: '여러 컴포넌트가 공유해야 하는 데이터를 한 곳에서 관리하는 저장소예요. 장바구니, 로그인 정보 등에 활용해요.',
     badge: { dark: 'bg-orange-500/20 text-orange-300 border border-orange-500/30', light: 'bg-orange-100 text-orange-700 border border-orange-200' },
@@ -76,7 +76,7 @@ const stack = [
   },
   {
     name: 'TanStack Query',
-    version: '5',
+    version: '5.97.0',
     description: '캐싱, 리페칭, 로딩/에러 상태 관리',
     simple: '서버에서 데이터를 가져올 때 로딩 중, 에러, 재시도를 자동으로 처리해줘요. API 연동이 훨씬 쉬워져요.',
     badge: { dark: 'bg-rose-500/20 text-rose-300 border border-rose-500/30', light: 'bg-rose-100 text-rose-700 border border-rose-200' },
@@ -85,7 +85,7 @@ const stack = [
   },
   {
     name: 'React Hook Form',
-    version: '7',
+    version: '7.72.1',
     description: '비제어 컴포넌트 방식 폼 상태 관리',
     simple: '이름, 이메일 등 입력 폼을 쉽게 만들고, 값을 효율적으로 관리해줘요. 불필요한 리렌더링 없이 빠르게 동작해요.',
     badge: { dark: 'bg-pink-500/20 text-pink-300 border border-pink-500/30', light: 'bg-pink-100 text-pink-700 border border-pink-200' },
@@ -94,7 +94,7 @@ const stack = [
   },
   {
     name: 'Zod',
-    version: '4',
+    version: '4.3.6',
     description: 'TypeScript-first 스키마 유효성 검증',
     simple: '입력값이 올바른 형식인지 규칙을 정의하고 자동으로 검사해줘요. 이메일 형식, 최소 글자 수 같은 검증에 써요.',
     badge: { dark: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30', light: 'bg-indigo-100 text-indigo-700 border border-indigo-200' },
@@ -103,7 +103,7 @@ const stack = [
   },
   {
     name: '@xyflow/react',
-    version: '12',
+    version: '12.10.2',
     description: '드래그, 연결, 인터랙티브 플로우 차트',
     simple: '노드와 선을 드래그로 연결하는 다이어그램 에디터를 만드는 라이브러리예요. 플로우차트나 워크플로우 UI에 써요.',
     badge: { dark: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30', light: 'bg-emerald-100 text-emerald-700 border border-emerald-200' },
@@ -112,7 +112,7 @@ const stack = [
   },
   {
     name: 'lucide-react',
-    version: '1',
+    version: '1.8.0',
     description: 'Tree-shakeable 오픈소스 아이콘',
     simple: '깔끔한 디자인의 아이콘을 React 컴포넌트처럼 바로 가져다 쓸 수 있어요. 사용하지 않는 아이콘은 번들에 포함되지 않아요.',
     badge: { dark: 'bg-amber-500/20 text-amber-300 border border-amber-500/30', light: 'bg-amber-100 text-amber-700 border border-amber-200' },
