@@ -585,7 +585,7 @@ function onStep2Submit(data) {
             </li>
           </ol>
           <p className="mt-4 text-xs text-muted-foreground border-t pt-3">
-            💡 <strong className="text-foreground">핵심:</strong> 검증 규칙이 바뀌면 schema만
+            <strong className="text-foreground">핵심:</strong> 검증 규칙이 바뀌면 schema만
             수정하면 됩니다. 에러 메시지도 schema에 같이 정의하므로 관리가 쉽습니다.
           </p>
         </CardContent>

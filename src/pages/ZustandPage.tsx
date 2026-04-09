@@ -429,7 +429,7 @@ addMessage('assistant', '안녕하세요! 무엇을 도와드릴까요?')`}</cod
             </li>
           </ol>
           <p className="mt-4 text-xs text-muted-foreground border-t pt-3">
-            💡 <strong className="text-foreground">핵심:</strong> props를 계속 넘기지 않아도
+            <strong className="text-foreground">핵심:</strong> props를 계속 넘기지 않아도
             어떤 컴포넌트에서든 스토어를 바로 꺼내 쓸 수 있습니다.
           </p>
         </CardContent>

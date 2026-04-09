@@ -558,7 +558,7 @@ export function ComponentsPage() {
             </li>
           </ol>
           <p className="mt-4 text-xs text-muted-foreground border-t pt-3">
-            💡 <strong className="text-foreground">어떤 컴포넌트가 있나요?</strong> Button, Input,
+            <strong className="text-foreground">어떤 컴포넌트가 있나요?</strong> Button, Input,
             Card, Dialog, Select, Table, Toast 등 40개 이상의 컴포넌트가 준비되어 있습니다. 전체
             목록은{' '}
             <a

@@ -53,6 +53,7 @@ export function Sidebar() {
       <div className="border-t border-border px-3 py-3 space-y-3">
         <button
           onClick={toggle}
+          aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
           className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         >
           {isDark ? <Sun className="size-4 shrink-0" /> : <Moon className="size-4 shrink-0" />}

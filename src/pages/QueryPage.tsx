@@ -434,7 +434,7 @@ const { data: results, isLoading } = useQuery({
             </li>
           </ol>
           <p className="mt-4 text-xs text-muted-foreground border-t pt-3">
-            💡 <strong className="text-foreground">핵심:</strong>{' '}
+            <strong className="text-foreground">핵심:</strong>{' '}
             <code className="text-xs bg-muted px-1 py-0.5 rounded">isLoading</code>,{' '}
             <code className="text-xs bg-muted px-1 py-0.5 rounded">isError</code>,{' '}
             <code className="text-xs bg-muted px-1 py-0.5 rounded">data</code>가 자동으로 제공되어

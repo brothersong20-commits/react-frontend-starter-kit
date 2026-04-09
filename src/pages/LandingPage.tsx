@@ -271,7 +271,7 @@ export function LandingPage() {
             aria-label="테마 전환"
             className={`ml-3 flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150 ${t.toggle}`}
           >
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
         </div>
       </header>
@@ -317,15 +317,15 @@ export function LandingPage() {
             className={`inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${t.btnPrimary}`}
           >
             탐색 시작하기
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="size-4" />
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/brothersong20/react-frontend-starter-kit"
             target="_blank"
             rel="noopener noreferrer"
             className={`inline-flex items-center gap-2 rounded-xl border px-6 py-2.5 text-sm font-semibold backdrop-blur-sm transition-all duration-150 active:scale-[0.98] ${t.btnSecondary}`}
           >
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink className="size-4" />
             GitHub
           </a>
         </div>

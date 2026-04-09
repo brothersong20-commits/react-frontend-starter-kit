@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export interface User {
   id: number
@@ -51,5 +51,12 @@ async function createPost(data: { title: string; body: string }): Promise<Post> 
 }
 
 export function useCreatePost() {
-  return useMutation({ mutationFn: createPost })
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createPost,
+    onSuccess: () => {
+      // 포스트 생성 성공 시 목록 캐시 무효화 → 자동 리페칭
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+    },
+  })
 }

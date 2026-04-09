@@ -4,16 +4,31 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import './index.css'
 
-// 오류 발생 시 화면에 직접 표시 (진단용)
+// 오류 발생 시 화면에 직접 표시 (진단용) — innerHTML 대신 DOM API 사용하여 XSS 방지
 function showError(msg: string) {
   const root = document.getElementById('root')
-  if (root) {
-    root.innerHTML = `<div style="padding:2rem;font-family:monospace;background:#1a1a1a;color:#ff6b6b;min-height:100vh">
-      <h2 style="color:#ff6b6b;margin:0 0 1rem">앱 초기화 오류</h2>
-      <pre style="white-space:pre-wrap;font-size:0.85rem;color:#ffa07a">${msg}</pre>
-      <p style="color:#888;margin-top:1rem;font-size:0.8rem">브라우저 F12 → Console 탭에서 상세 오류를 확인하세요.</p>
-    </div>`
-  }
+  if (!root) return
+  root.innerHTML = ''
+
+  const wrapper = document.createElement('div')
+  wrapper.setAttribute('style', 'padding:2rem;font-family:monospace;background:#1a1a1a;color:#ff6b6b;min-height:100vh')
+
+  const title = document.createElement('h2')
+  title.setAttribute('style', 'color:#ff6b6b;margin:0 0 1rem')
+  title.textContent = '앱 초기화 오류'
+
+  const pre = document.createElement('pre')
+  pre.setAttribute('style', 'white-space:pre-wrap;font-size:0.85rem;color:#ffa07a')
+  pre.textContent = msg // textContent → HTML 자동 이스케이프
+
+  const hint = document.createElement('p')
+  hint.setAttribute('style', 'color:#888;margin-top:1rem;font-size:0.8rem')
+  hint.textContent = '브라우저 F12 → Console 탭에서 상세 오류를 확인하세요.'
+
+  wrapper.appendChild(title)
+  wrapper.appendChild(pre)
+  wrapper.appendChild(hint)
+  root.appendChild(wrapper)
 }
 
 window.addEventListener('error', (e) => {

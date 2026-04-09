@@ -459,7 +459,7 @@ const { nodes, edges } = tasks ? tasksToFlow(tasks) : { nodes: [], edges: [] }`}
             </li>
           </ol>
           <p className="mt-4 text-xs text-muted-foreground border-t pt-3">
-            💡 <strong className="text-foreground">핵심:</strong> 노드/엣지는 일반 JS 배열이므로
+            <strong className="text-foreground">핵심:</strong> 노드/엣지는 일반 JS 배열이므로
             API에서 받은 데이터로 동적으로 다이어그램을 생성할 수 있습니다.
           </p>
         </CardContent>
