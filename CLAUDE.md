@@ -34,14 +34,15 @@ npm run preview   # 프로덕션 빌드 미리보기
 ### 진입점 및 라우팅
 
 - `src/main.tsx` — React 19 루트, TanStack Query 설정, FOUC 방지 테마 퍼시스턴스 (`localStorage` `'rsk-theme'` 키), `window.error` / `unhandledrejection` 전역 에러 핸들러
-- `src/App.tsx` — React Router v7, 총 6개 라우트; 내부 라우트는 모두 `AppLayout`으로 감싸짐
+- `src/App.tsx` — React Router v7, 총 7개 라우트; 내부 라우트는 모두 `AppLayout`으로 감싸짐
 
 라우트 구성:
 - `/` → `LandingPage` (정적 import — 즉시 렌더링, 레이아웃 없음)
+- `/login` → `LoginPage` (레이아웃 없음, 지연 로딩)
 - `/zustand`, `/query`, `/form`, `/flow`, `/components` → `AppLayout` 내부 (사이드바 + outlet)
 
 코드 스플리팅:
-- `LandingPage`만 정적 import; 나머지 5개 페이지는 `React.lazy()` + `Suspense`로 분리
+- `LandingPage`만 정적 import; 나머지 6개 페이지는 `React.lazy()` + `Suspense`로 분리
 
 ### 테마 시스템
 
